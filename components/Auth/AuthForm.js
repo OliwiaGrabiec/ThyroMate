@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { Button, TextInput} from 'react-native-paper';
 
-import Button from '../ui/Button';
 import Input from './Input';
 
 function AuthForm({ isLogin, onSubmit, credentialsInvalid }) {
@@ -44,13 +44,14 @@ function AuthForm({ isLogin, onSubmit, credentialsInvalid }) {
   }
 
   return (
-    <View style={styles.form}>
+
+      <View style={styles.form}>
       <View>
         <Input
           label="Email"
           onUpdateValue={updateInputValueHandler.bind(this, 'email')}
           value={enteredEmail}
-          keyboardType="email-address"
+         
           isInvalid={emailIsInvalid}
         />
         {!isLogin && (
@@ -82,12 +83,12 @@ function AuthForm({ isLogin, onSubmit, credentialsInvalid }) {
           />
         )}
         <View style={styles.buttons}>
-          <Button onPress={submitHandler}>
-            {isLogin ? 'Zaloguj' : 'Zarejestruj'}
+          <Button  mode="outlined"    labelStyle={styles.buttonText}  style={styles.button} onPress={submitHandler}>
+          {isLogin ? 'Zaloguj' : 'Zarejestruj'}
           </Button>
         </View>
       </View>
-    </View>
+      </View>
   );
 }
 
@@ -96,5 +97,15 @@ export default AuthForm;
 const styles = StyleSheet.create({
   buttons: {
     marginTop: 12,
+  },
+  button: {
+    borderRadius: 20,
+    elevation: 2,
+    borderColor: 'white', 
+    borderWidth: 1, 
+  },
+  buttonText: {
+    fontSize: 20, 
+    color: 'white', 
   },
 });

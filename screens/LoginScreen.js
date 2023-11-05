@@ -4,7 +4,7 @@ import AuthContent from '../components/Auth/AuthContent';
 import LoadingOverlay from '../components/ui/LoadingOverlay';
 import { AuthContext } from '../store/auth-context';
 import { login } from '../util/auth';
-
+import { LinearGradient } from 'expo-linear-gradient';
 function LoginScreen() {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
@@ -24,7 +24,15 @@ function LoginScreen() {
     }
   }
   if (isAuthenticating) {
-    return <LoadingOverlay message="Logowanie trwa..." />;
+    return <LinearGradient
+    colors={['#2D9F8E', '#8a66af']}
+    style={{ flex: 1 }}
+    start={{ x: 0, y: 0 }}
+    end={{ x: 1, y: 0 }}
+    > 
+    <LoadingOverlay message="Logowanie trwa..." 
+    />
+    </LinearGradient>;
   }
 
 

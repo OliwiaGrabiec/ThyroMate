@@ -31,9 +31,7 @@ function AuthStack() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: Colors.primary500 },
         headerTintColor: 'white',
-        contentStyle: { backgroundColor: Colors.primary100 },
       }}
     >
       <Stack.Screen name="Logowanie" component={LoginScreen} options={{ headerShown: false }}/>
@@ -49,38 +47,37 @@ function AuthenticatedStack() {
  
 <Tab.Navigator
  initialRouteName="Home"
-  
-  screenOptions={({ route }) => ({
+ screenOptions={({ route }) => ({
     tabBarIcon: ({ color, size }) => {
       if (route.name === 'Ekran główny') {
-        return <Ionicons name="home" size={20} color={color} />;
+        return <Ionicons name="home" size={25} color={color} />;
       } else if (route.name === 'Leki') {
-        return <AntDesign name="medicinebox" size={25} color={color} />;
+        return <AntDesign name="medicinebox" size={30} color={color} />;
       }
     },
-
-  })}
- 
->
-      <Tab.Screen name="Ekran główny"   
-       >
-      {() => (
-              <HomeStack.Navigator>
-                <HomeStack.Screen name="WelcomeScreen" component={WelcomeScreen} options={{ headerShown: false }}/>
-                <HomeStack.Screen name="NotificationsScreen" component={NotificationsScreen} />
-                <HomeStack.Screen name="SymptonsScreen" component={SymptonsScreen} />
-                <HomeStack.Screen name="RecScreen" component={RecScreen} />
-                <HomeStack.Screen name="MonitoringScreen" component={MonitoringScreen} />
-                <HomeStack.Screen name="JournalScreen" component={JournalScreen} />
-                <HomeStack.Screen name="AppGuideScreen" component={AppGuideScreen} />
-              </HomeStack.Navigator>
-            )}
-            
+  })
+  }>
+      <Tab.Screen name="Ekran główny" >
+        {() => (
+                <HomeStack.Navigator screenOptions={{headerTintColor: 'black',}}>
+                  <HomeStack.Screen name="WelcomeScreen" component={WelcomeScreen} options={{ headerShown: false }}/>
+                  <HomeStack.Screen name="NotificationsScreen" component={NotificationsScreen} 
+                  options={{   title: 'Wizyty', 
+                                headerStyle: {
+                                  height: 150, 
+                                },
+                    }}/>
+                  <HomeStack.Screen name="SymptonsScreen" component={SymptonsScreen} />
+                  <HomeStack.Screen name="RecScreen" component={RecScreen} />
+                  <HomeStack.Screen name="MonitoringScreen" component={MonitoringScreen} />
+                  <HomeStack.Screen name="JournalScreen" component={JournalScreen} />
+                  <HomeStack.Screen name="AppGuideScreen" component={AppGuideScreen} />
+                </HomeStack.Navigator>
+        )}    
       </Tab.Screen>
       <Tab.Screen
         name="Leki"
-        component={MedicineScreen}
-       
+        component={MedicineScreen}  
          />
     </Tab.Navigator>
     

@@ -5,71 +5,75 @@ import {View, Text, Button, StyleSheet, Pressable,Image} from 'react-native';
 
 
 import IconButton from '../components/ui/IconButton';
-import { Colors } from '../constants/styles';
 import { AuthContext } from '../store/auth-context';
-
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 export default function WelcomeScreen({ navigation }) {
-
-  const [fetchedMessage, setFetchedMesssage] = useState('');
-
   const authCtx = useContext(AuthContext);
-  const token = authCtx.token;
-
-  
- 
 
   return (
-    <View>
-      <View style={styles.rootContainer}>
-        <View style={styles.headerContainer}>
-         <View style={styles.cos}>
-          <Image  source={require('../assets/thyromate.png')}  style={{ width: 125, height: 125, paddingRight: 150 }}/>
-          <IconButton
-            icon="exit"
-            color='white'
-            size={24}
-            onPress={authCtx.logout}
-          />
-          </View>
-      </View>
-    </View>
-    
-    <View style={styles.buttonContainer}>
-     <View style={styles.buttonRow}>
-        <Pressable style={styles.button}
-        onPress={() => navigation.navigate('NotificationsScreen')}>
-          <Text style={styles.text}>Wizyty</Text>
-        </Pressable>
-        <Pressable style={styles.button}
-        onPress={() => navigation.navigate('SymptonsScreen')}>
-          <Text style={styles.text}>Symptony</Text>
-        </Pressable>
+    <LinearGradient
+    colors={['#2D9F8E', '#8a66af']}
+    style={{ flex: 1 }}
+    start={{ x: 0, y: 0 }}
+    end={{ x: 1, y: 0 }}
+    >
+    <View style={styles.rootContainer}>
+      <View style={styles.headerContainer}>
+        <Image  source={require('../assets/thyromate.png')}  style={{ width: 150, height: 150 }}/>
+        <View style={styles.iconColumn}>
+            <IconButton
+                icon="exit"
+                color='white'
+                size={40}
+                onPress={authCtx.logout} 
+            />
+            <Text style={styles.iconLabel}>Wyloguj się</Text>
         </View>
-      <View style={styles.buttonRow}>
-        <Pressable style={styles.button}
-        onPress={() => navigation.navigate('RecScreen')}>
-          <Text style={styles.text}>Notatki</Text>
-        </Pressable>
-        <Pressable style={styles.button}
-        onPress={() => navigation.navigate('MonitoringScreen')}>
-          <Text style={styles.text}>Badania</Text>
-        </Pressable>
       </View>
-      <View style={styles.buttonRow}>
-        <Pressable style={styles.button}
-        onPress={() => navigation.navigate('JournalScreen')}>
-          <Text style={styles.text}>Dziennik nastrojów</Text>
-        </Pressable>
-        <Pressable style={styles.button}
-        onPress={() => navigation.navigate('AppGuideScreen')}>
-          <Text style={styles.text}>Poradnik</Text>
-        </Pressable>
+      <View style={styles.buttonContainer}>
+        <View style={styles.buttonRow}>
+          <Pressable style={styles.button}
+          onPress={() => navigation.navigate('NotificationsScreen')}>
+            <Image source={require('../assets/reminders.png')} style={{width: 100, height:100}}/>
+            <Text style={styles.text}>Wizyty</Text>
+          </Pressable>
+          <Pressable style={styles.button}
+          onPress={() => navigation.navigate('SymptonsScreen')}>
+           <Image source={require('../assets/symptoms.png')} style={{width: 100, height:100}}/>
+            <Text style={styles.text}>Symptomy</Text>
+          </Pressable>
+        </View>
+        <View style={styles.buttonRow}>
+          <Pressable style={styles.button}
+          onPress={() => navigation.navigate('RecScreen')}>
+            <Image source={require('../assets/zalecenia.png')} style={{width: 100, height:100}}/>
+            <Text style={styles.text}>Zalecenia</Text>
+          </Pressable>
+          <Pressable style={styles.button}
+          onPress={() => navigation.navigate('MonitoringScreen')}>
+            <Image source={require('../assets/badania.png')} style={{width: 100, height:100}}/>
+            <Text style={styles.text}>Badania</Text>
+          </Pressable>
+        </View>
+        <View style={styles.buttonRow}>
+          <Pressable style={styles.button}
+          onPress={() => navigation.navigate('JournalScreen')}>
+            <Image source={require('../assets/moods.png')} style={{width: 90, height:90}}/>
+            <Text style={styles.text}>Dziennik </Text>
+            <Text style={styles.text}>nastrojów</Text>
+          </Pressable>
+          <Pressable style={styles.button}
+          onPress={() => navigation.navigate('AppGuideScreen')}>
+            <Image source={require('../assets/guide.png')} style={{width: 100, height:100}}/>
+            <Text style={styles.text}>Poradnik</Text>
+          </Pressable>
+      </View>
     </View>
-    </View>
-  
   </View>
+  </LinearGradient>
+    
   );
 }
 
@@ -77,34 +81,17 @@ export default function WelcomeScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   rootContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 100,
-    backgroundColor:  '#2D9F8E',
-    elevation: 5, 
-    shadowColor: 'black', 
-    shadowOffset: { width: 0, height: -4 }, 
-    shadowOpacity: 0.2, 
-  },
-  title: {
-    fontSize: 20,
-    marginBottom: 0,
-    marginLeft:0,
-    marginTop:0,
+    flex: 1, 
+    marginTop:5
   },
   headerContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    width: 400,
-    height: 400,
-    position: 'absolute',
-    top:-90,
-    right: 40,
+    justifyContent: 'space-between',
+    marginHorizontal: 40,
+    marginTop: 60,
   },
 buttonContainer: {
-  marginTop: -20,
   backgroundColor: 'white',
   borderRadius: 30,
   height: 800,
@@ -112,50 +99,48 @@ buttonContainer: {
   shadowColor: 'black', 
   shadowOffset: { width: 0, height: -4 }, 
   shadowOpacity: 0.2, 
+  marginTop: -20
 },
 buttonRow: {
   flexDirection: 'row',
   justifyContent: 'space-between',
-  marginBottom: 20,
-  marginTop:20,
+  marginBottom: -10,
+  marginTop:10,
   marginLeft:10,
+  marginRight:10,
   alignContent:'center'
 },
-iconContainer:{
-  
-},
 button: {
-  alignItems: 'center',
-  justifyContent: 'center',
-  width:150,
-  height:100,
-  paddingVertical: 20,
-  paddingHorizontal: 10,
+  width: '40%', 
+  aspectRatio: 1,
+  justifyContent: 'center', 
+  alignItems: 'center', 
+  marginBottom:0, 
+  margin: '5%',
   borderRadius: 10,
-  elevation: 3,
   backgroundColor: '#afeeee',
-  elevation: 5, 
+  elevation:5,
   shadowColor: 'black', 
   shadowOffset: { width: 0, height: 4 }, 
   shadowOpacity: 0.2, 
-  marginTop:30,
-  marginHorizontal:20
-  
+  shadowRadius: 4,
 },
 text: {
   fontSize: 16,
   lineHeight: 21,
   letterSpacing: 0.25,
   color: 'black',
-  
 },
-cos: {
-  flexDirection: 'row',
+iconColumn:{
+  flexDirection: 'column',
+  alignContent: 'center',
   justifyContent: 'space-between',
-  marginRight: 40,
+  marginBottom:40 ,
 },
-cos2: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
+iconLabel:{
+  color: 'white',
+  textAlign: 'center',
+  fontSize: 16,
+  marginLeft: -15
 }
 });

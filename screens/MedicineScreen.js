@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, 
+          Text, 
+          StyleSheet, 
+          TouchableOpacity, 
+          Keyboard, 
+          TouchableWithoutFeedback,
+          ImageBackground  } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
@@ -13,7 +19,7 @@ export default function MedicineScreen({ navigation }) {
   const [tookMedicine, setTookMedicine] = useState(false);
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
   const [notificationId, setNotificationId] = useState(null);
-  const [tabletsCount, setTabletsCount] = useState(''); // Liczba tabletek
+  const [tabletsCount, setTabletsCount] = useState(''); 
   const [startDate, setStartDate] = useState(null);
 
   const loadInitialState = async () => {
@@ -27,6 +33,7 @@ export default function MedicineScreen({ navigation }) {
     if (storedStartDate) setStartDate(storedStartDate);
 };
   useEffect(() => {
+
     loadInitialState();
   }, []);
 
@@ -97,23 +104,43 @@ const scheduleTabletNotification = async (date) => {
         repeats: true,
       },
     });
-
+    
+    
     setNotificationId(id);
     AsyncStorage.setItem('notificationTime', `${hour}:${minute}`);
+    return id;
   };
 
   const showTimePicker = () => {
     setTimePickerVisible(true);
   };
 
-  const handleTimeChange = (event, selectedTime) => {
+  const handleTimeChange = async (event, selectedTime) => {
     setTimePickerVisible(false);
     if (selectedTime) {
       const timeString = selectedTime.toLocaleTimeString().slice(0, 5);
       setNotificationTime(timeString);
       if (wantsNotification) {
-        const [hour, minute] = timeString.split(':');
-        scheduleDailyNotification(Number(hour), Number(minute));
+        try {
+          if (notificationId) {
+            await Notifications.cancelScheduledNotificationAsync(notificationId);
+          }
+          const [hour, minute] = timeString.split(':');
+          const newNotificationId = await scheduleDailyNotification(Number(hour), Number(minute));
+          
+          // Check that newNotificationId is not undefined before attempting to set it in AsyncStorage
+          if (newNotificationId) {
+            setNotificationId(newNotificationId);
+            await AsyncStorage.setItem('notificationTime', `${hour}:${minute}`);
+            await AsyncStorage.setItem('notificationId', newNotificationId.toString()); // Make sure to convert to string
+          } else {
+            // Handle the case where newNotificationId is undefined
+            console.error('Failed to get a new notification ID');
+          }
+        } catch (e) {
+          // Handle the error
+          console.error(e);
+        }
       }
     }
   };
@@ -135,12 +162,17 @@ const scheduleTabletNotification = async (date) => {
 
   useEffect(() => {
     if (wantsNotification && notificationTime) {
-      if (notificationId) {
-        Notifications.cancelScheduledNotificationAsync(notificationId);
-      }
-
-      const [hour, minute] = notificationTime.split(':');
-      scheduleDailyNotification(Number(hour), Number(minute));
+      const updateNotification = async () => {
+        // Cancel previous notification
+        if (notificationId) {
+          await Notifications.cancelScheduledNotificationAsync(notificationId);
+        }
+        const [hour, minute] = notificationTime.split(':');
+        const newNotificationId = await scheduleDailyNotification(Number(hour), Number(minute));
+        setNotificationId(newNotificationId);
+      };
+      
+      updateNotification();
     }
   }, [wantsNotification, notificationTime]);
 
@@ -148,11 +180,13 @@ const scheduleTabletNotification = async (date) => {
         setTookMedicine(value);
         AsyncStorage.setItem('tookMedicine', JSON.stringify(value));
     };
+
   const handleTabletsCountChange = async (count) => {
       setTabletsCount(count);
       const currentCount = parseInt(count, 10);
+      const storedNotificationId = await AsyncStorage.getItem('tabletNotificationId');
       if (notificationId) {
-        await Notifications.cancelScheduledNotificationAsync(notificationId);
+        await Notifications.cancelScheduledNotificationAsync(storedNotificationId);
     }
 
       
@@ -164,25 +198,43 @@ const scheduleTabletNotification = async (date) => {
           const notificationDate = calculateNotificationDate(currentCount);
           const id = await scheduleTabletNotification(notificationDate);
           setNotificationId(id);
+          await AsyncStorage.setItem('tabletNotificationId', id);
       }
     
   };
 
-
+  useEffect(() => {
+    // Funkcja do przywrócenia ID powiadomienia z AsyncStorage
+    const restoreTabletNotificationId = async () => {
+      try {
+        const storedTookMedicine = await AsyncStorage.getItem('tookMedicine');
+        if (storedTookMedicine !== null) {
+          setTookMedicine(JSON.parse(storedTookMedicine));
+        }
+      } catch (error) {
+        console.error('Error parsing tookMedicine:', error);
+        // Handle the error, for example by resetting the stored value
+      }
+    };
+  
+    restoreTabletNotificationId();
+  }, []);
 
   return (
-    <View style={styles.rootContainer}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.title}>Leki</Text>
-      </View>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+   <ImageBackground
+        source={require('../assets/Leki.png')} 
+        style={styles.rootContainer}
+      >
+      <View style={styles.overlay} />
       <View style={styles.buttonContainer}>
         <Text style={styles.text}>Odznacz wzięcie leków</Text>
         <Switch
-  value={tookMedicine}
-  onValueChange={handleTookMedicineChange}
-  style={styles.checkbox}
-  color={tookMedicine ? 'blue' : undefined}
-/>
+        value={tookMedicine}
+        onValueChange={handleTookMedicineChange}
+        style={styles.checkbox}
+        color={tookMedicine ? 'blue' : undefined}
+      />
         <Text style={styles.text}>
           Czy chcesz codziennie dostawać powiadomienie o przyjmowaniu leków?
         </Text>
@@ -193,21 +245,17 @@ const scheduleTabletNotification = async (date) => {
           color={wantsNotification ? 'blue' : undefined}
         />
         {wantsNotification && (
-          <View>
+          <View >
             <Text style={styles.text}>Wybierz godzinę przyjmowania leków:</Text>
-            <TouchableOpacity onPress={showTimePicker}>
-              <Text style={styles.input}>{notificationTime || 'Wybierz godzinę'}</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        {isTimePickerVisible && (
-          <DateTimePicker
+            <DateTimePicker
             value={new Date()}
             mode="time"
             is24Hour={true}
             display="default"
             onChange={handleTimeChange}
+            style={{}}
           />
+          </View>
         )}
         <Text style={styles.text}>Wpisz liczbę tabletek, które masz:</Text>
         <TextInput
@@ -217,7 +265,8 @@ const scheduleTabletNotification = async (date) => {
           keyboardType="numeric"
         />
       </View>
-    </View>
+      </ImageBackground>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -233,9 +282,15 @@ const styles = StyleSheet.create({
   rootContainer: {
     flex: 1,
     padding: 20,
-    justifyContent: 'flex-start', // To sprawi, że zawartość zaczyna się od góry
-    backgroundColor: '#2D9F8E',
+    justifyContent: 'flex-start', 
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    
+    alignItems: 'center',
     ...commonShadow
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject, 
+    backgroundColor: 'rgba(0, 0, 0, 0.2)', 
   },
   title: {
     fontSize: 24,
@@ -249,14 +304,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
-    alignSelf: 'stretch' // To sprawi, że będzie na całą szerokość
+    alignSelf: 'stretch' 
   },
   buttonContainer: {
-    flex:1,// Ważne! To sprawi, że zajmie całą dostępną przestrzeń
-    padding: 20,
-    backgroundColor: 'white',
-    borderRadius: 10,
-    ...commonShadow
+   marginTop: 100,
+   marginHorizontal:20,
   },
   checkbox: {
     alignSelf: 'center',
@@ -279,9 +331,11 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 16,
+    fontWeight: 'bold',
     lineHeight: 21,
     letterSpacing: 0.25,
     color: 'black',
-    marginVertical: 10
+    marginVertical: 10,
+  
   },
 });

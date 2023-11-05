@@ -8,19 +8,27 @@ import { TextInput } from 'react-native-paper';
 import axios from 'axios';
 import { AuthContext } from '../store/auth-context';
 import { Buffer } from 'buffer';
+import { useFocusEffect } from '@react-navigation/native';
 
 const BASE_URL ='https://logow-576ee-default-rtdb.firebaseio.com/';
 
-export default function App() {
+export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
+  const [user_id, setUserId]=useState('');
+
 
   const authCtx = useContext(AuthContext);
+  const token = authCtx.token; 
 
+  const showDialog = () => setDialogVisible(true);
+
+  const hideDialog = () => setDialogVisible(false);
+  
   function decodeBase64Url(str) {
   str = str.replace(/-/g, '+').replace(/_/g, '/');
   const missingPadding = 4 - (str.length % 4);
@@ -37,19 +45,22 @@ function getUserIdFromToken(token) {
   return jsonPayload.user_id;
 }
 
-const token = authCtx.token; // Zakładając, że masz już token
-const userId = getUserIdFromToken(token);
-console.log(userId);
 
-
-
-  useEffect(() => {
+useFocusEffect(
+  React.useCallback(() => {
+    setUserId(getUserIdFromToken(token));
     loadNotifications();
-  }, []);
+  }, [user_id]) 
+);
+
+  // useEffect(() => {
+  //   setUserId(getUserIdFromToken(token));
+  //   loadNotifications();
+  // }, []);
 
   const loadNotifications = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/notifications/${token}.json`);
+      const response = await axios.get(`${BASE_URL}/users/${user_id}/notifications.json`);
       const loadedNotifications = [];
       for (const key in response.data) {
         loadedNotifications.push({
@@ -81,28 +92,19 @@ console.log(userId);
     title,
     description,
     date: date.toLocaleString(),
+    trigger,
   };
   setNotifications([...notifications, newNotification]);
   setTitle('');
   setDescription('');
   setDate(new Date());
   try {
-    const response = await axios.post(`${BASE_URL}/users/notifications.json`, newNotification);
+    console.log(user_id);
+
+    const response = await axios.post(`${BASE_URL}/users/${user_id}/notifications.json`, newNotification);
     newNotification.id = response.data.name;
   } catch (error) {
     console.error('Błąd podczas zapisywania powiadomień w Firebase:', error);
-    if (error.response) {
-      // Błąd odpowiedzi serwera
-      console.error('Data:', error.response.data);
-      console.error('Status:', error.response.status);
-      console.error('Headers:', error.response.headers);
-    } else if (error.request) {
-      // Żądanie zostało zrobione, ale nie otrzymaliśmy odpowiedzi
-      console.error('Request:', error.request);
-    } else {
-      // Coś poszło źle w trakcie tworzenia żądania
-      console.error('Error:', error.message);
-    }
   
   }
   setDialogVisible(false);
@@ -118,7 +120,7 @@ const removeNotification = async (id) => {
       if (scheduledId) {
         await Notifications.cancelScheduledNotificationAsync(scheduledId);
       }
-      await axios.delete(`${BASE_URL}/notifications/${token}/${id}.json`);
+      await axios.delete(`${BASE_URL}/users/${user_id}/notifications/${id}.json`);
       setNotifications((prevNotifications) => prevNotifications.filter((notification) => notification.id !== id));
     }
   } catch (error) {
@@ -126,27 +128,21 @@ const removeNotification = async (id) => {
   }
 };
 
-  const showDatepicker = () => {
-    setShowDatePicker(true);
-  };
 
   const handleDateChange = (event, selectedDate) => {
+    setShowDatePicker(true);
     setShowDatePicker(Platform.OS === 'ios');
     setDate(selectedDate || date);
   };
 
 
-  const showDialog = () => setDialogVisible(true);
-
-  const hideDialog = () => setDialogVisible(false);
-
   const renderItem = ({ item }) => (
     <View style={{  paddingVertical:5 }}>
       <Surface style={styles.surface} elevation={4}>
-        <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{item.title}</Text>
+        <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 5}}>{item.title}</Text>
         <Text>{item.description}</Text>
         <Text>{item.date}</Text>
-        <Button title="Usuń" onPress={() => removeNotification(item.id)} color="black"/>
+        <Button title="Usuń" onPress={() => removeNotification(item.id)} color="red"/>
       </Surface>
     </View>
   );
@@ -154,24 +150,25 @@ const removeNotification = async (id) => {
   return (
     <PaperProvider>
     <View style={{ flex: 1, padding: 30 }}>
-    
-      <IconButton
-              icon="plus"
-              mode='contained'
-              iconColor={MD3Colors.error50}
-              containerColor='blue'
-              size={40}
-              onPress={showDialog}
-              />
+      <View style={styles.shadow}>
+        <IconButton
+          icon="plus"
+          mode="contained"
+          iconColor="black"
+          size={40}
+          onPress={showDialog}
+          style={{ backgroundColor: '#ece6f2' }} // Set the background color here
+        />
+      </View>
         
           <Portal>
-            <Dialog visible={dialogVisible}  onDismiss={hideDialog}>
-              <Dialog.Title>Dodaj nowe powiadomienie</Dialog.Title>
+            <Dialog visible={dialogVisible} style={{borderRadius:10}} onDismiss={hideDialog}>
+              <Dialog.Title>Dodaj nową wizytę: </Dialog.Title>
                <Dialog.Content>
                   <TextInput
             mode="outlined"
-            outlineColor='#008080'
-            activeOutlineColor='#008080'
+            outlineColor= '#8a66af'
+            activeOutlineColor='#8a66af'
           
               label="Tytuł"
               value={title}
@@ -180,8 +177,8 @@ const removeNotification = async (id) => {
             />
             <TextInput
             mode="outlined"
-            outlineColor='#008080'
-            activeOutlineColor='#008080'
+            outlineColor= '#8a66af'
+            activeOutlineColor='#8a66af'
           
               label="Opis"
               value={description}
@@ -189,17 +186,14 @@ const removeNotification = async (id) => {
               style={styles.text}
             
             />
-
-            <Button title="Wybierz date" onPress={showDatepicker} style={styles.button} color="black"/>
-            {showDatePicker && (
-              <DateTimePicker
+             <DateTimePicker
                 value={date}
                 mode="datetime"
                 display="default"
                 onChange={handleDateChange}
                 style={styles.czasdata}
               />
-            )}
+            
             </Dialog.Content>
             <Dialog.Actions>
               <Button title="Dodaj" onPress={addNotification} style={styles.button} color="black"/>
@@ -259,5 +253,15 @@ surface: {
   marginLeft:10,
   alignItems: 'center',
   justifyContent: 'center',
+  borderRadius: 10,
+  shadowOffset: { width: 0, height: 4 }, 
+  height:150
+},
+shadow: {
+  shadowOpacity: 0.35,
+  shadowRadius: 5,
+  shadowColor: '#000000',
+  shadowOffset: { height: 4, width: 0 },
+  elevation: 5, 
 },
 });

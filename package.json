@@ -22,6 +22,7 @@
     "expo": "~49.0.15",
     "expo-app-loading": "^2.1.1",
     "expo-checkbox": "~2.4.0",
+    "expo-linear-gradient": "^12.5.0",
     "expo-notifications": "~0.20.1",
     "expo-status-bar": "~1.6.0",
     "firebase": "^10.5.2",

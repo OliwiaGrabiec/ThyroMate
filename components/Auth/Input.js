@@ -1,5 +1,6 @@
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { Colors } from '../../constants/styles';
+import { TextInput} from 'react-native-paper';
 
 function Input({
   label,
@@ -11,16 +12,19 @@ function Input({
 }) {
   return (
     <View style={styles.inputContainer}>
-      <Text style={[styles.label, isInvalid && styles.labelInvalid]}>
-        {label}
-      </Text>
       <TextInput
-        style={[styles.input, isInvalid && styles.inputInvalid]}
+        mode='outlined'
+        outlineColor= 'white'
+        activeOutlineColor='white'
+        textColor='white'
+        theme={{ colors: { placeholder: 'white', text: 'white', primary: 'white',underlineColor:'transparent', background : 'transparent'}}}
+        style={styles.input}
         autoCapitalize="none"
         keyboardType={keyboardType}
         secureTextEntry={secure}
         onChangeText={onUpdateValue}
         value={value}
+        label={label}
       />
     </View>
   );
@@ -32,21 +36,12 @@ const styles = StyleSheet.create({
   inputContainer: {
     marginVertical: 8,
   },
-  label: {
-    color: 'white',
-    marginBottom: 4,
-  },
-  labelInvalid: {
-    color: Colors.error500,
-  },
   input: {
     paddingVertical: 8,
     paddingHorizontal: 6,
-    backgroundColor: Colors.primary100,
-    borderRadius: 4,
-    fontSize: 16,
+    height: 35,
+    backgroundColor: 'transparent', 
+    fontSize: 20,           
   },
-  inputInvalid: {
-    backgroundColor: Colors.error100,
-  },
+  
 });

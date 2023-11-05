@@ -4,7 +4,7 @@ function LoadingOverlay({ message }) {
   return (
     <View style={styles.rootContainer}>
       <Text style={styles.message}>{message}</Text>
-      <ActivityIndicator animating={true} color={MD2Colors.red800} size="large" />
+      <ActivityIndicator animating={true} color='white' size="large" />
     </View>
   );
 }
@@ -21,5 +21,6 @@ const styles = StyleSheet.create({
   message: {
     fontSize: 16,
     marginBottom: 12,
+    color:'white'
   },
 });

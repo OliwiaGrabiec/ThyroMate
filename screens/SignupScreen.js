@@ -4,7 +4,7 @@ import AuthContent from '../components/Auth/AuthContent';
 import LoadingOverlay from '../components/ui/LoadingOverlay';
 import { AuthContext } from '../store/auth-context';
 import { createUser } from '../util/auth';
-
+import { LinearGradient } from 'expo-linear-gradient';
 function SignupScreen() {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
@@ -25,7 +25,15 @@ function SignupScreen() {
   }
 
   if (isAuthenticating) {
-    return <LoadingOverlay message="Rejestracja trwa..." />;
+
+    return <LinearGradient
+    colors={['#2D9F8E', '#8a66af']}
+    style={{ flex: 1 }}
+    start={{ x: 0, y: 0 }}
+    end={{ x: 1, y: 0 }}
+    >
+    <LoadingOverlay message="Rejestracja trwa..." />
+    </LinearGradient>;
   }
 
   return <AuthContent onAuthenticate={signupHandler} />;
