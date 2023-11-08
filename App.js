@@ -67,7 +67,11 @@ function AuthenticatedStack() {
                                   height: 150, 
                                 },
                     }}/>
-                  <HomeStack.Screen name="SymptonsScreen" component={SymptonsScreen} />
+                  <HomeStack.Screen name="SymptonsScreen" component={SymptonsScreen} options={{   title: 'Dodaj symptomy', 
+                                headerStyle: {
+                                  height: 150, 
+                                },
+                    }}/>
                   <HomeStack.Screen name="RecScreen" component={RecScreen} />
                   <HomeStack.Screen name="MonitoringScreen" component={MonitoringScreen} />
                   <HomeStack.Screen name="JournalScreen" component={JournalScreen} />

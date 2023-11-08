@@ -3,7 +3,7 @@ import { View, Text, FlatList,  Button, Platform, Pressable } from 'react-native
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Notifications from 'expo-notifications';
 import { StyleSheet } from "react-native";
-import {Portal, PaperProvider, Dialog,  Surface, IconButton, MD3Colors   } from 'react-native-paper';
+import {Portal, PaperProvider, Dialog,  Surface, IconButton  } from 'react-native-paper';
 import { TextInput } from 'react-native-paper';
 import axios from 'axios';
 import { AuthContext } from '../store/auth-context';
@@ -17,7 +17,6 @@ export default function NotificationsScreen() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
   const [user_id, setUserId]=useState('');
 
