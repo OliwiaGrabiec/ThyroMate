@@ -1,23 +1,24 @@
-import { View, StyleSheet } from 'react-native';
-import { Colors } from '../../constants/styles';
-import { TextInput} from 'react-native-paper';
+import {View, StyleSheet} from 'react-native';
+import {Colors} from '../../constants/styles';
+import {TextInput} from 'react-native-paper';
 
-function Input({
-  label,
-  keyboardType,
-  secure,
-  onUpdateValue,
-  value,
-  isInvalid,
-}) {
+function Input({label, keyboardType, secure, onUpdateValue, value, isInvalid}) {
   return (
     <View style={styles.inputContainer}>
       <TextInput
-        mode='outlined'
-        outlineColor= 'white'
-        activeOutlineColor='white'
-        textColor='white'
-        theme={{ colors: { placeholder: 'white', text: 'white', primary: 'white',underlineColor:'transparent', background : 'transparent'}}}
+        mode="outlined"
+        outlineColor="white"
+        activeOutlineColor="white"
+        textColor="white"
+        theme={{
+          colors: {
+            placeholder: 'white',
+            text: 'white',
+            primary: 'white',
+            underlineColor: 'transparent',
+            background: 'transparent',
+          },
+        }}
         style={styles.input}
         autoCapitalize="none"
         keyboardType={keyboardType}
@@ -39,9 +40,8 @@ const styles = StyleSheet.create({
   input: {
     paddingVertical: 8,
     paddingHorizontal: 6,
-    height: 35,
-    backgroundColor: 'transparent', 
-    fontSize: 20,           
+    height: 30,
+    backgroundColor: 'transparent',
+    fontSize: 20,
   },
-  
 });

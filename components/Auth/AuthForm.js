@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { Button, TextInput} from 'react-native-paper';
+import {useState} from 'react';
+import {StyleSheet, View} from 'react-native';
+import {Button, TextInput} from 'react-native-paper';
 
 import Input from './Input';
 
-function AuthForm({ isLogin, onSubmit, credentialsInvalid }) {
+function AuthForm({isLogin, onSubmit, credentialsInvalid}) {
   const [enteredEmail, setEnteredEmail] = useState('');
   const [enteredConfirmEmail, setEnteredConfirmEmail] = useState('');
   const [enteredPassword, setEnteredPassword] = useState('');
@@ -44,14 +44,12 @@ function AuthForm({ isLogin, onSubmit, credentialsInvalid }) {
   }
 
   return (
-
-      <View style={styles.form}>
+    <View style={styles.form}>
       <View>
         <Input
           label="Email"
           onUpdateValue={updateInputValueHandler.bind(this, 'email')}
           value={enteredEmail}
-         
           isInvalid={emailIsInvalid}
         />
         {!isLogin && (
@@ -75,7 +73,7 @@ function AuthForm({ isLogin, onSubmit, credentialsInvalid }) {
             label="Potwierdź hasło"
             onUpdateValue={updateInputValueHandler.bind(
               this,
-              'confirmPassword'
+              'confirmPassword',
             )}
             secure
             value={enteredConfirmPassword}
@@ -83,12 +81,16 @@ function AuthForm({ isLogin, onSubmit, credentialsInvalid }) {
           />
         )}
         <View style={styles.buttons}>
-          <Button  mode="outlined"    labelStyle={styles.buttonText}  style={styles.button} onPress={submitHandler}>
-          {isLogin ? 'Zaloguj' : 'Zarejestruj'}
+          <Button
+            mode="outlined"
+            labelStyle={styles.buttonText}
+            style={styles.button}
+            onPress={submitHandler}>
+            {isLogin ? 'Zaloguj' : 'Zarejestruj'}
           </Button>
         </View>
       </View>
-      </View>
+    </View>
   );
 }
 
@@ -101,11 +103,11 @@ const styles = StyleSheet.create({
   button: {
     borderRadius: 20,
     elevation: 2,
-    borderColor: 'white', 
-    borderWidth: 1, 
+    borderColor: 'white',
+    borderWidth: 1,
   },
   buttonText: {
-    fontSize: 20, 
-    color: 'white', 
+    fontSize: 20,
+    color: 'white',
   },
 });
