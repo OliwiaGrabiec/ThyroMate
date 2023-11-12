@@ -1,25 +1,26 @@
-import { useContext, useEffect, useState } from "react";
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { StatusBar } from "expo-status-bar";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import AppLoading from "expo-app-loading";
-import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
-import { Ionicons, AntDesign } from "@expo/vector-icons";
-import { ScrollView } from "react-native";
-import LoginScreen from "./screens/LoginScreen";
-import SignupScreen from "./screens/SignupScreen";
-import WelcomeScreen from "./screens/WelcomeScreen";
-import MedicineScreen from "./screens/MedicineScreen";
-import NotificationsScreen from "./screens/NotificationsScreen";
-import { Colors } from "./constants/styles";
-import AuthContextProvider, { AuthContext } from "./store/auth-context";
-import SymptonsScreen from "./screens/SymptomsScreen";
-import RecScreen from "./screens/RecScreen";
-import MonitoringScreen from "./screens/MonitoringScreen";
-import JournalScreen from "./screens/JournalScreen";
-import AppGuideScreen from "./screens/AppGuideScreen";
-import IconButton from "./components/ui/IconButton";
+import {useContext, useEffect, useState} from 'react';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {StatusBar} from 'expo-status-bar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import AppLoading from 'expo-app-loading';
+import {createMaterialBottomTabNavigator} from '@react-navigation/material-bottom-tabs';
+import {Ionicons, AntDesign} from '@expo/vector-icons';
+import {ScrollView} from 'react-native';
+import LoginScreen from './screens/LoginScreen';
+import SignupScreen from './screens/SignupScreen';
+import WelcomeScreen from './screens/WelcomeScreen';
+import MedicineScreen from './screens/MedicineScreen';
+import NotificationsScreen from './screens/NotificationsScreen';
+import {Colors} from './constants/styles';
+import AuthContextProvider, {AuthContext} from './store/auth-context';
+import SymptonsScreen from './screens/SymptomsScreen';
+import RecScreen from './screens/RecScreen';
+import MonitoringScreen from './screens/MonitoringScreen';
+import JournalScreen from './screens/JournalScreen';
+import AppGuideScreen from './screens/AppGuideScreen';
+import DetailScreen from './screens/DetailScreen';
+import IconButton from './components/ui/IconButton';
 
 const HomeStack = createNativeStackNavigator();
 const Tab = createMaterialBottomTabNavigator();
@@ -29,18 +30,17 @@ function AuthStack() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerTintColor: "white",
-      }}
-    >
+        headerTintColor: 'white',
+      }}>
       <Stack.Screen
         name="Logowanie"
         component={LoginScreen}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="Rejestracja"
         component={SignupScreen}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
     </Stack.Navigator>
   );
@@ -51,29 +51,28 @@ function AuthenticatedStack() {
   return (
     <Tab.Navigator
       initialRouteName="Home"
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ color, size }) => {
-          if (route.name === "Ekran główny") {
+      screenOptions={({route}) => ({
+        tabBarIcon: ({color, size}) => {
+          if (route.name === 'Ekran główny') {
             return <Ionicons name="home" size={25} color={color} />;
-          } else if (route.name === "Leki") {
+          } else if (route.name === 'Leki') {
             return <AntDesign name="medicinebox" size={30} color={color} />;
           }
         },
-      })}
-    >
+      })}>
       <Tab.Screen name="Ekran główny">
         {() => (
-          <HomeStack.Navigator screenOptions={{ headerTintColor: "black" }}>
+          <HomeStack.Navigator screenOptions={{headerTintColor: 'black'}}>
             <HomeStack.Screen
               name="WelcomeScreen"
               component={WelcomeScreen}
-              options={{ headerShown: false }}
+              options={{headerShown: false}}
             />
             <HomeStack.Screen
               name="NotificationsScreen"
               component={NotificationsScreen}
               options={{
-                title: "Wizyty",
+                title: 'Wizyty',
                 headerStyle: {
                   height: 150,
                 },
@@ -83,7 +82,7 @@ function AuthenticatedStack() {
               name="SymptonsScreen"
               component={SymptonsScreen}
               options={{
-                title: "Dodaj symptomy",
+                title: 'Dodaj symptomy',
                 headerStyle: {
                   height: 150,
                 },
@@ -91,8 +90,26 @@ function AuthenticatedStack() {
             />
             <HomeStack.Screen name="RecScreen" component={RecScreen} />
             <HomeStack.Screen
+              name="DetailScreen"
+              component={DetailScreen}
+              options={{
+                headerBackTitle: null,
+                title: 'Szczegóły',
+                headerStyle: {
+                  height: 150,
+                },
+              }}
+            />
+            <HomeStack.Screen
               name="MonitoringScreen"
               component={MonitoringScreen}
+              options={{
+                title: 'Wyniki',
+                headerStyle: {
+                  height: 150,
+                },
+                headerBackTitle: null,
+              }}
             />
             <HomeStack.Screen name="JournalScreen" component={JournalScreen} />
             <HomeStack.Screen
@@ -125,7 +142,7 @@ function Root() {
 
   useEffect(() => {
     async function fetchToken() {
-      const storedToken = await AsyncStorage.getItem("token");
+      const storedToken = await AsyncStorage.getItem('token');
 
       if (storedToken) {
         authCtx.authenticate(storedToken);

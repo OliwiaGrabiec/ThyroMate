@@ -64,6 +64,9 @@ export default function SymptomsScreen({navigation}) {
       setUserId(userId);
     }, [token]),
   );
+  useEffect(() => {
+    loadSymptomsForDay();
+  }, [symptoms]);
 
   const onDayPress = day => {
     setDate(new Date(day.timestamp));
