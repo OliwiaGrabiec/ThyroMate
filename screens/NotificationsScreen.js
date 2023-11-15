@@ -17,6 +17,7 @@ import {Buffer} from 'buffer';
 import {useFocusEffect} from '@react-navigation/native';
 import {Picker} from '@react-native-picker/picker';
 import Checkbox from 'expo-checkbox';
+import {ActionButton} from '../components/ui/ActionButton';
 
 const BASE_URL = 'https://logow-576ee-default-rtdb.firebaseio.com/';
 
@@ -53,17 +54,18 @@ export default function NotificationsScreen() {
     return jsonPayload.user_id;
   }
 
-  useFocusEffect(
-    React.useCallback(() => {
-      setUserId(getUserIdFromToken(token));
-      loadNotifications();
-    }, [user_id]),
-  );
-
-  // useEffect(() => {
-  //   setUserId(getUserIdFromToken(token));
-  //   loadNotifications();
-  // }, []);
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     setUserId(getUserIdFromToken(token));
+  //     loadNotifications();
+  //   }, [user_id]),
+  // );
+  useEffect(() => {
+    setUserId(getUserIdFromToken(token));
+  }, []);
+  useEffect(() => {
+    loadNotifications();
+  }, [notifications]);
 
   const loadNotifications = async () => {
     try {
@@ -184,16 +186,7 @@ export default function NotificationsScreen() {
   return (
     <PaperProvider>
       <View style={{flex: 1, padding: 30}}>
-        <View style={styles.shadow}>
-          <IconButton
-            icon="plus"
-            mode="contained"
-            iconColor="black"
-            size={40}
-            onPress={showDialog}
-            style={{backgroundColor: '#ece6f2'}} // Set the background color here
-          />
-        </View>
+        <ActionButton onPress={showDialog} />
 
         <Portal>
           <Dialog

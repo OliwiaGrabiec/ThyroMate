@@ -1,5 +1,13 @@
 import React, {useContext, useState, useEffect} from 'react';
-import {View, Text, FlatList, Button, Platform, Pressable} from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  Button,
+  Alert,
+  Platform,
+  Pressable,
+} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {StyleSheet} from 'react-native';
 import {
@@ -20,7 +28,7 @@ const BASE_URL = 'https://logow-576ee-default-rtdb.firebaseio.com/';
 
 export default function DetailScreen({route}) {
   const {title} = route.params;
-  const {idN} = route.params;
+
   const [title1, setTitle1] = useState('');
   const [date, setDate] = useState(new Date());
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -51,12 +59,20 @@ export default function DetailScreen({route}) {
     return jsonPayload.user_id;
   }
 
-  useFocusEffect(
-    React.useCallback(() => {
-      setUserId(getUserIdFromToken(token));
-      loadDetail();
-    }, [user_id]),
-  );
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     setUserId(getUserIdFromToken(token));
+  //     loadDetail();
+  //   }, [user_id]),
+  // );
+
+  useEffect(() => {
+    setUserId(getUserIdFromToken(token));
+  }, []);
+  useEffect(() => {
+    loadDetail();
+  }, [testsDetail]);
+
   const handleTitle1Change = text => {
     const formattedText = text.replace(',', '.');
     const value = parseFloat(formattedText);
@@ -88,7 +104,7 @@ export default function DetailScreen({route}) {
   const loadDetail = async () => {
     try {
       const response = await axios.get(
-        `${BASE_URL}/users/${user_id}/tests/history/${title}.json`,
+        `${BASE_URL}/users/${user_id}/history/${title}.json`,
       );
       const loadedTestsDetail = [];
       for (const key in response.data) {
@@ -105,6 +121,10 @@ export default function DetailScreen({route}) {
   };
 
   const addDetail = async () => {
+    if (!title1.trim()) {
+      Alert.alert('Błąd', 'Nie możesz dodać pustej wartości');
+      return;
+    }
     const identifier = new Date().getTime().toString();
     const newTestDetail = {
       id: identifier,
@@ -117,7 +137,7 @@ export default function DetailScreen({route}) {
     setTestResult([...testResult, parseFloat(title1)]);
     try {
       const response = await axios.post(
-        `${BASE_URL}/users/${user_id}/tests/history/${title}.json`,
+        `${BASE_URL}/users/${user_id}/history/${title}.json`,
         newTestDetail,
       );
       newTestDetail.id = response.data.name;
@@ -129,7 +149,7 @@ export default function DetailScreen({route}) {
   const removeDetail = async id => {
     try {
       await axios.delete(
-        `${BASE_URL}/users/${user_id}/tests/history/${title}/${id}.json`,
+        `${BASE_URL}/users/${user_id}/history/${title}/${id}.json`,
       );
       setTestsDetail(prevTestsDetail =>
         prevTestsDetail.filter(testDetail => testDetail.id !== id),
@@ -142,7 +162,7 @@ export default function DetailScreen({route}) {
     <View style={{paddingVertical: 5}}>
       <Surface style={styles.surface} elevation={4}>
         <Text style={{fontSize: 16, fontWeight: 'bold', marginBottom: 5}}>
-          {item.title1.toString()}
+          {item.title1?.toString() || 'No value'}
         </Text>
         <Text>{item.date}</Text>
         <Button
@@ -155,47 +175,56 @@ export default function DetailScreen({route}) {
   );
   return (
     <PaperProvider>
-      <View style={{flex: 1, padding: 30}}>
-        <View style={styles.shadow}>
-          <IconButton
-            icon="plus"
-            mode="contained"
-            iconColor="black"
-            size={40}
-            onPress={showDialog}
-            style={{backgroundColor: '#ece6f2'}}
-          />
-        </View>
+      <View style={{flex: 1, padding: 5}}>
         <View
           style={{
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-          <Text>{title}</Text>
+          <Text style={{fontSize: 20, fontWeight: 'bold'}}>{title}</Text>
           <LineChart
             data={data}
             width={370}
             height={300}
+            yAxisInterval={1}
             chartConfig={{
-              backgroundColor: '#e26a00',
-              backgroundGradientFrom: '#fb8c00',
-              backgroundGradientTo: '#ffa726',
-              decimalPlaces: 2,
-              color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-              labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+              backgroundGradientFrom: '#8a66af',
+              backgroundGradientTo: '#8a66af',
+              backgroundGradientToOpacity: 0.7,
+              color: (opacity = 1) => `rgba(35, 26, 44, ${opacity})`,
+              strokeWidth: 2,
+              barPercentage: 0.5,
+              useShadowColorFromDataset: false,
+
               style: {},
               propsForDots: {
                 r: '6',
                 strokeWidth: '2',
-                stroke: '#ffa726',
+                stroke: '#c5b3d7',
               },
             }}
-            bezier // optional, adds a curved line
+            bezier
             style={{
               marginVertical: 8,
               borderRadius: 10,
-              marginHorizontal: 5,
             }}
+          />
+        </View>
+        <View
+          style={{
+            ...styles.shadow,
+            position: 'absolute',
+            bottom: 10,
+            right: 10,
+            zIndex: 999,
+          }}>
+          <IconButton
+            icon="plus"
+            mode="contained"
+            iconColor="black"
+            size={35}
+            onPress={showDialog}
+            style={{backgroundColor: '#8a66af'}}
           />
         </View>
         <Portal>
@@ -233,7 +262,7 @@ export default function DetailScreen({route}) {
           </Dialog>
         </Portal>
         <Portal.Host>
-          <Text> Historia wyników: </Text>
+          <Text style={{fontSize: 18, marginLeft: 10}}>Historia wyników:</Text>
           <FlatList
             data={testsDetail}
             renderItem={renderItem}

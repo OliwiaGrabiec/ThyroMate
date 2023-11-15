@@ -1,19 +1,21 @@
 import React, {useContext, useState, useEffect} from 'react';
-import {View, Text, FlatList, Button, Platform, Pressable} from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import {StyleSheet} from 'react-native';
 import {
-  Portal,
-  PaperProvider,
-  Dialog,
-  Surface,
-  IconButton,
-} from 'react-native-paper';
+  View,
+  Text,
+  FlatList,
+  Button,
+  ImageBackground,
+  Alert,
+  Pressable,
+} from 'react-native';
+import {StyleSheet} from 'react-native';
+import {Portal, PaperProvider, Dialog, Surface} from 'react-native-paper';
 import {TextInput} from 'react-native-paper';
 import {Buffer} from 'buffer';
 import {useFocusEffect} from '@react-navigation/native';
 import axios from 'axios';
 import {AuthContext} from '../store/auth-context';
+import {ActionButton} from '../components/ui/ActionButton';
 
 const BASE_URL = 'https://logow-576ee-default-rtdb.firebaseio.com/';
 
@@ -47,12 +49,19 @@ export default function MonitoringScreen({navigation}) {
     return jsonPayload.user_id;
   }
 
-  useFocusEffect(
-    React.useCallback(() => {
-      setUserId(getUserIdFromToken(token));
-      loadTests();
-    }, [user_id]),
-  );
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     setUserId(getUserIdFromToken(token));
+  //     loadTests();
+  //   }, [user_id]),
+  // );
+  useEffect(() => {
+    setUserId(getUserIdFromToken(token));
+  }, []);
+  useEffect(() => {
+    loadTests();
+  }, [tests]);
+
   const loadTests = async () => {
     try {
       const response = await axios.get(
@@ -72,6 +81,10 @@ export default function MonitoringScreen({navigation}) {
   };
 
   const addTests = async () => {
+    if (!title.trim()) {
+      Alert.alert('Błąd', 'Nie możesz dodać pustej wartości');
+      return;
+    }
     const identifier = new Date().getTime().toString();
     const newTest = {
       id1: identifier,
@@ -122,18 +135,12 @@ export default function MonitoringScreen({navigation}) {
   );
   return (
     <PaperProvider>
-      <View style={{flex: 1, padding: 30}}>
-        <View style={styles.shadow}>
-          <IconButton
-            icon="plus"
-            mode="contained"
-            iconColor="black"
-            size={40}
-            onPress={showDialog}
-            style={{backgroundColor: '#ece6f2'}}
-          />
-        </View>
+      <ImageBackground
+        source={require('../assets/Monitoring.png')}
+        style={styles.rootContainer}>
+        <View style={styles.overlay} />
 
+        <ActionButton onPress={showDialog} />
         <Portal>
           <Dialog
             visible={dialogVisible}
@@ -175,11 +182,31 @@ export default function MonitoringScreen({navigation}) {
             style={{marginTop: 20}}
           />
         </Portal.Host>
-      </View>
+      </ImageBackground>
     </PaperProvider>
   );
 }
+
+const commonShadow = {
+  elevation: 5,
+  shadowColor: 'black',
+  shadowOffset: {width: 0, height: 4},
+  shadowOpacity: 0.2,
+};
+
 const styles = StyleSheet.create({
+  rootContainer: {
+    flex: 1,
+    padding: 20,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    //alignItems: 'center',
+    ...commonShadow,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+  },
   button: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -215,7 +242,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 10,
     shadowOffset: {width: 0, height: 4},
-    height: 150,
+    height: 100,
   },
   shadow: {
     shadowOpacity: 0.35,

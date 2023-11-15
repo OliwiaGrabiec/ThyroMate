@@ -1,35 +1,20 @@
 import * as React from 'react';
-import {
-  View,
-  StyleSheet,
-  Text,
-  Button,
-  FlatList,
-  TouchableOpacity,
-  Platform,
-} from 'react-native';
+import {View, StyleSheet, Text, Button, TouchableOpacity} from 'react-native';
 import {Agenda} from 'react-native-calendars';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useEffect, useState, useContext} from 'react';
 import {addDays, format, parseISO} from 'date-fns';
 import {useFocusEffect} from '@react-navigation/native';
-import {
-  Modal,
-  Portal,
-  IconButton,
-  Surface,
-  PaperProvider,
-} from 'react-native-paper';
+import {Modal, Portal, Surface, PaperProvider} from 'react-native-paper';
 import {TextInput} from 'react-native-paper';
 import {Buffer} from 'buffer';
 import axios from 'axios';
-
 import {AuthContext} from '../store/auth-context';
+import {ActionButton} from '../components/ui/ActionButton';
 
 const BASE_URL = 'https://logow-576ee-default-rtdb.firebaseio.com/';
 
 export default function SymptomsScreen({navigation}) {
-  const [visible, setVisible] = React.useState(false);
+  const [visible, setVisible] = useState(false);
   const [title, setTitle] = useState('');
   const [rate, setRate] = useState('');
   const [description, setDescription] = useState('');
@@ -58,20 +43,19 @@ export default function SymptomsScreen({navigation}) {
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      const userId = getUserIdFromToken(token);
-      setUserId(userId);
-    }, [token]),
-  );
+  useEffect(() => {
+    const userId = getUserIdFromToken(token);
+    setUserId(userId);
+  }, []);
+
   useEffect(() => {
     loadSymptomsForDay();
-  }, [symptoms]);
+  }, [date]);
 
   const onDayPress = day => {
     setDate(new Date(day.timestamp));
-    loadSymptomsForDay();
   };
+
   const parseAndFormatDate = dateString => {
     const [datePart, timePart] = dateString.split(', ');
     const [day, month, year] = datePart.split('/');
@@ -108,8 +92,6 @@ export default function SymptomsScreen({navigation}) {
           rate: symptom.rate,
         });
       }
-      console.log(symptoms);
-      console.log(JSON.stringify(symptomsForAgenda));
       setItems({...symptomsForAgenda});
       setSymptoms(loadedSymptoms);
     } catch (error) {
@@ -184,6 +166,20 @@ export default function SymptomsScreen({navigation}) {
   };
   const defaultColor = 'gray';
 
+  // const renderItem = item => {
+  //   // Add a console log to check the structure of the item
+  //   console.log(item);
+
+  //   // Check if the item is undefined before rendering the SymptomItem
+  //   if (!item) {
+  //     // You can return null or some placeholder to indicate there's an issue with the data
+  //     console.log(item);
+  //     console.warn('Undefined item encountered in renderItem');
+  //     return null;
+  //   }
+
+  //   return <SymptomItem item1={item} onRemove={removeSymptoms} />;
+  // };
   const renderItem = item => (
     <View style={{paddingVertical: 5}}>
       <Surface style={styles.surface} elevation={4}>
@@ -218,36 +214,18 @@ export default function SymptomsScreen({navigation}) {
     </View>
   );
 
-  const rowHasChanged = (r1, r2) => {
-    return r1.name !== r2.name;
-  };
+  // const rowHasChanged = (r1, r2) => {
+  //   return r1.name !== r2.name;
+  // };
 
   return (
     <PaperProvider>
       <View style={styles.container}>
-        <View
-          style={{
-            ...styles.shadow,
-            position: 'absolute',
-            bottom: 0,
-            right: 10,
-            zIndex: 999,
-          }}>
-          <IconButton
-            icon="plus"
-            mode="contained"
-            iconColor="black"
-            size={40}
-            onPress={showModal}
-            style={{
-              backgroundColor: '#afeeee',
-            }}
-          />
-        </View>
+        <ActionButton onPress={showModal} />
         <Agenda
           items={items}
           onDayPress={onDayPress}
-          rowHasChanged={rowHasChanged}
+          // rowHasChanged={rowHasChanged}
           renderItem={renderItem}
           renderEmptyData={() => {
             return (
@@ -337,6 +315,37 @@ export default function SymptomsScreen({navigation}) {
     </PaperProvider>
   );
 }
+// function SymptomItem1({item1, onRemove}) {
+//   return (
+//     <View style={{paddingVertical: 5}}>
+//       <Surface style={styles.surface} elevation={4}>
+//         <View>
+//           <View style={{}}>
+//             <Text style={{fontSize: 16, fontWeight: 'bold', marginBottom: 5}}>
+//               {item1.title || ''}
+//             </Text>
+//             <Text>{item1.description || ''}</Text>
+//           </View>
+//           <View
+//             style={{
+//               width: 80,
+//               height: 40,
+//               marginLeft: 200,
+//               marginBottom: 10,
+//               justifyContent: 'center',
+//               alignItems: 'center',
+//               borderRadius: 30,
+//               //backgroundColor: levelStyles[item1.rate] ?? defaultColor,
+//             }}>
+//             <Text>{item1.rate}</Text>
+//           </View>
+//         </View>
+//         <Button title="Usuń" onPress={() => onRemove(item1.id)} color="red" />
+//       </Surface>
+//     </View>
+//   );
+// }
+// const SymptomItem = memo(SymptomItem1);
 
 const styles = StyleSheet.create({
   absolute: {
@@ -374,16 +383,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '400',
     textAlign: 'center',
-    marginBottom: 10,
-    marginTop: 10,
-  },
-  shadow: {
-    shadowOpacity: 0.35,
-    shadowRadius: 5,
-    shadowColor: '#000000',
-    shadowOffset: {height: 4, width: 0},
-    elevation: 5,
-    marginLeft: 30,
     marginBottom: 10,
     marginTop: 10,
   },

@@ -53,7 +53,7 @@ export default function MedicineScreen({navigation}) {
     if (storedStartDate) setStartDate(storedStartDate);
   };
   useEffect(() => {
-    loadNotifications();
+    // loadNotifications();
     loadStartDate();
     loadInitialState();
   }, []);
@@ -370,7 +370,7 @@ export default function MedicineScreen({navigation}) {
           </View>
 
           <Portal>
-            <Dialog
+            {/* <Dialog
               visible={dialogVisible}
               style={{borderRadius: 10}}
               onDismiss={hideDialog}>
@@ -409,7 +409,7 @@ export default function MedicineScreen({navigation}) {
                   color="black"
                 />
               </Dialog.Actions>
-            </Dialog>
+            </Dialog> */}
           </Portal>
           <Portal.Host>
             <FlatList
