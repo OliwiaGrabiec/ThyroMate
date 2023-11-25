@@ -10,8 +10,37 @@ import {Buffer} from 'buffer';
 import axios from 'axios';
 import {AuthContext} from '../store/auth-context';
 import {ActionButton} from '../components/ui/ActionButton';
+import {LocaleConfig} from 'react-native-calendars';
 
 const BASE_URL = 'https://logow-576ee-default-rtdb.firebaseio.com/';
+
+LocaleConfig.locales['pl'] = {
+  monthNames: [
+    'Styczeń',
+    'Luty',
+    'Marzec',
+    'Kwiecień',
+    'Maj',
+    'Czerwiec',
+    'Lipiec',
+    'Sierpień',
+    'Wrzesień',
+    'Październik',
+    'Listopad',
+    'Grudzień',
+  ],
+  dayNames: [
+    'Poniedziałek',
+    'Wtorek',
+    'Środa',
+    'Czwartek',
+    'Piątek',
+    'Sobota',
+    'Niedziela',
+  ],
+  dayNamesShort: ['Pon.', 'Wt.', 'Śr.', 'Czw.', 'Pią.', 'Sob.', 'Niedz.'],
+};
+LocaleConfig.defaultLocale = 'pl';
 
 export default function SymptomsScreen({navigation}) {
   const [visible, setVisible] = useState(false);
@@ -183,14 +212,20 @@ export default function SymptomsScreen({navigation}) {
   const renderItem = item => (
     <View style={{paddingVertical: 5}}>
       <Surface style={styles.surface} elevation={4}>
-        <View>
-          <View style={{}}>
-            <Text style={{fontSize: 16, fontWeight: 'bold', marginBottom: 5}}>
+        <View style={{flex: 1, flexDirection: 'row'}}>
+          <View style={{flex: 1, flexDirection: 'column'}}>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: 'bold',
+                marginBottom: 5,
+                marginHorizontal: 10,
+              }}>
               {item.title}
             </Text>
             <Text>{item.description}</Text>
           </View>
-          <View
+          {/* <View
             style={{
               //padding: 10,
               width: 80,
@@ -203,7 +238,7 @@ export default function SymptomsScreen({navigation}) {
               backgroundColor: levelStyles[item.rate] ?? defaultColor,
             }}>
             <Text>{item.rate}</Text>
-          </View>
+          </View> */}
         </View>
         <Button
           title="Usuń"
@@ -368,7 +403,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   surface: {
-    padding: 6,
+    padding: 40,
     marginRight: 10,
     marginLeft: 10,
     alignItems: 'center',

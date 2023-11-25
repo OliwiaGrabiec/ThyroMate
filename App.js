@@ -20,6 +20,7 @@ import MonitoringScreen from './screens/MonitoringScreen';
 import JournalScreen from './screens/JournalScreen';
 import AppGuideScreen from './screens/AppGuideScreen';
 import DetailScreen from './screens/DetailScreen';
+import AddRec from './screens/AddRec';
 import IconButton from './components/ui/IconButton';
 
 const HomeStack = createNativeStackNavigator();
@@ -88,13 +89,34 @@ function AuthenticatedStack() {
                 },
               }}
             />
-            <HomeStack.Screen name="RecScreen" component={RecScreen} />
+            <HomeStack.Screen
+              name="RecScreen"
+              component={RecScreen}
+              options={{
+                headerBackTitle: null,
+                title: 'Dodaj zalecenia',
+                headerStyle: {
+                  height: 150,
+                },
+              }}
+            />
             <HomeStack.Screen
               name="DetailScreen"
               component={DetailScreen}
               options={{
                 headerBackTitle: null,
                 title: 'Szczegóły',
+                headerStyle: {
+                  height: 150,
+                },
+              }}
+            />
+            <HomeStack.Screen
+              name="AddRec"
+              component={AddRec}
+              options={{
+                headerBackTitle: null,
+                title: 'Dodaj zalecenia',
                 headerStyle: {
                   height: 150,
                 },
@@ -111,10 +133,27 @@ function AuthenticatedStack() {
                 headerBackTitle: null,
               }}
             />
-            <HomeStack.Screen name="JournalScreen" component={JournalScreen} />
+            <HomeStack.Screen
+              name="JournalScreen"
+              component={JournalScreen}
+              options={{
+                headerBackTitle: null,
+                title: 'Dziennik nastrojów',
+                headerStyle: {
+                  height: 150,
+                },
+              }}
+            />
             <HomeStack.Screen
               name="AppGuideScreen"
               component={AppGuideScreen}
+              options={{
+                headerBackTitle: null,
+                title: 'Poradnik',
+                headerStyle: {
+                  height: 150,
+                },
+              }}
             />
           </HomeStack.Navigator>
         )}

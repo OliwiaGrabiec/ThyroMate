@@ -29,11 +29,11 @@ export default function MedicineScreen({navigation}) {
   const [tookMedicine, setTookMedicine] = useState(false);
   const [notificationId, setNotificationId] = useState(null);
   const [tabletsCount, setTabletsCount] = useState('');
-  const [startDate, setStartDate] = useState(null);
-  const [medicines, setMedicines] = useState([]);
-  const [title, setTitle] = useState('');
-  const [count, setCount] = useState(null);
-  const [dialogVisible, setDialogVisible] = useState(false);
+  // const [startDate, setStartDate] = useState(null);
+  // const [medicines, setMedicines] = useState([]);
+  // const [title, setTitle] = useState('');
+  // const [count, setCount] = useState(null);
+  // const [dialogVisible, setDialogVisible] = useState(false);
 
   const showDialog = () => setDialogVisible(true);
 
@@ -53,7 +53,6 @@ export default function MedicineScreen({navigation}) {
     if (storedStartDate) setStartDate(storedStartDate);
   };
   useEffect(() => {
-    // loadNotifications();
     loadStartDate();
     loadInitialState();
   }, []);
@@ -115,46 +114,46 @@ export default function MedicineScreen({navigation}) {
     }
   }, [wantsNotification, notificationTime]);
 
-  useEffect(() => {
-    // Funkcja do przywrócenia ID powiadomienia z AsyncStorage
-    const restoreTabletNotificationId = async () => {
-      try {
-        const storedTookMedicine = await AsyncStorage.getItem('tookMedicine');
-        if (storedTookMedicine !== null) {
-          setTookMedicine(JSON.parse(storedTookMedicine));
-        }
-      } catch (error) {
-        console.error('Error parsing tookMedicine:', error);
-        // Handle the error, for example by resetting the stored value
-      }
-    };
-    restoreTabletNotificationId();
-  }, []);
+  // useEffect(() => {
+  //   // Funkcja do przywrócenia ID powiadomienia z AsyncStorage
+  //   const restoreTabletNotificationId = async () => {
+  //     try {
+  //       const storedTookMedicine = await AsyncStorage.getItem('tookMedicine');
+  //       if (storedTookMedicine !== null) {
+  //         setTookMedicine(JSON.parse(storedTookMedicine));
+  //       }
+  //     } catch (error) {
+  //       console.error('Error parsing tookMedicine:', error);
+  //       // Handle the error, for example by resetting the stored value
+  //     }
+  //   };
+  //   restoreTabletNotificationId();
+  // }, []);
 
-  const calculateNotificationDate = count => {
-    const daysBeforeEnd = count - 10;
-    const currentDate = DateTime.local().setZone('Europe/Warsaw');
-    const notificationDate = currentDate.plus({days: daysBeforeEnd});
-    return notificationDate;
-  };
+  // const calculateNotificationDate = count => {
+  //   const daysBeforeEnd = count - 10;
+  //   const currentDate = DateTime.local().setZone('Europe/Warsaw');
+  //   const notificationDate = currentDate.plus({days: daysBeforeEnd});
+  //   return notificationDate;
+  // };
 
-  const scheduleTabletNotification = async date => {
-    const id = await Notifications.scheduleNotificationAsync({
-      content: {
-        title: 'Zapas leków kończy się',
-        body: 'Pozostało 10 dni zapasu leków.',
-      },
-      trigger: {
-        year: date.year,
-        month: date.month,
-        day: date.day,
-        hour: 10,
-        minute: 42,
-        repeats: false,
-      },
-    });
-    return id;
-  };
+  // const scheduleTabletNotification = async date => {
+  //   const id = await Notifications.scheduleNotificationAsync({
+  //     content: {
+  //       title: 'Zapas leków kończy się',
+  //       body: 'Pozostało 10 dni zapasu leków.',
+  //     },
+  //     trigger: {
+  //       year: date.year,
+  //       month: date.month,
+  //       day: date.day,
+  //       hour: 10,
+  //       minute: 42,
+  //       repeats: false,
+  //     },
+  //   });
+  //   return id;
+  // };
   const scheduleDailyNotification = async (hour, minute) => {
     const now = DateTime.local();
     const triggerTime = now.set({hour, minute});
@@ -219,87 +218,87 @@ export default function MedicineScreen({navigation}) {
     AsyncStorage.setItem('tookMedicine', JSON.stringify(value));
   };
 
-  const handleTabletsCountChange = async count => {
-    setTabletsCount(count);
-    const currentCount = parseInt(count, 10);
-    const storedNotificationId = await AsyncStorage.getItem(
-      'tabletNotificationId',
-    );
-    if (notificationId) {
-      await Notifications.cancelScheduledNotificationAsync(
-        storedNotificationId,
-      );
-    }
+  // const handleTabletsCountChange = async count => {
+  //   setTabletsCount(count);
+  //   const currentCount = parseInt(count, 10);
+  //   const storedNotificationId = await AsyncStorage.getItem(
+  //     'tabletNotificationId',
+  //   );
+  //   if (notificationId) {
+  //     await Notifications.cancelScheduledNotificationAsync(
+  //       storedNotificationId,
+  //     );
+  //   }
 
-    if (currentCount === 10) {
-      const currentDate = DateTime.local().setZone('Europe/Warsaw');
-      AsyncStorage.setItem('startDate', currentDate.toString());
-      setStartDate(currentDate.toString());
+  //   if (currentCount === 10) {
+  //     const currentDate = DateTime.local().setZone('Europe/Warsaw');
+  //     AsyncStorage.setItem('startDate', currentDate.toString());
+  //     setStartDate(currentDate.toString());
 
-      const notificationDate = calculateNotificationDate(currentCount);
-      const id = await scheduleTabletNotification(notificationDate);
-      setNotificationId(id);
-      await AsyncStorage.setItem('tabletNotificationId', id);
-    }
-  };
+  //     const notificationDate = calculateNotificationDate(currentCount);
+  //     const id = await scheduleTabletNotification(notificationDate);
+  //     setNotificationId(id);
+  //     await AsyncStorage.setItem('tabletNotificationId', id);
+  //   }
+  // };
 
-  const renderItem = ({item}) => (
-    <View style={{paddingVertical: 5}}>
-      <Surface style={styles.surface} elevation={4}>
-        <Text style={{fontSize: 16, fontWeight: 'bold', marginBottom: 5}}>
-          {item.title}
-        </Text>
-        <Text>{item.count}</Text>
-        <Button
-          title="Usuń"
-          onPress={() => removeMedicine(item.id)}
-          color="red"
-        />
-      </Surface>
-    </View>
-  );
+  // const renderItem = ({item}) => (
+  //   <View style={{paddingVertical: 5}}>
+  //     <Surface style={styles.surface} elevation={4}>
+  //       <Text style={{fontSize: 16, fontWeight: 'bold', marginBottom: 5}}>
+  //         {item.title}
+  //       </Text>
+  //       <Text>{item.count}</Text>
+  //       <Button
+  //         title="Usuń"
+  //         onPress={() => removeMedicine(item.id)}
+  //         color="red"
+  //       />
+  //     </Surface>
+  //   </View>
+  // );
 
-  const addMedicine = async () => {
-    const newMedicine = {
-      id: Date.now().toString(),
-      title,
-      count: count,
-    };
-    setMedicines([...medicines, newMedicine]);
-    setTitle('');
-    setCount('');
-    try {
-      await AsyncStorage.setItem('medicines', JSON.stringify(medicines));
-    } catch (error) {
-      console.error(
-        'Błąd podczas zapisywania powiadomień w async storage',
-        error,
-      );
-    }
-    if (count <= 10) {
-      await scheduleTabletNotification(newMedicine);
-    }
-    setDialogVisible(false);
-  };
-  const removeMedicine = async id => {
-    try {
-      const medicineToDelete = medicines.find(medicine => medicine.id === id);
+  // const addMedicine = async () => {
+  //   const newMedicine = {
+  //     id: Date.now().toString(),
+  //     title,
+  //     count: count,
+  //   };
+  //   setMedicines([...medicines, newMedicine]);
+  //   setTitle('');
+  //   setCount('');
+  //   try {
+  //     await AsyncStorage.setItem('medicines', JSON.stringify(medicines));
+  //   } catch (error) {
+  //     console.error(
+  //       'Błąd podczas zapisywania powiadomień w async storage',
+  //       error,
+  //     );
+  //   }
+  //   if (count <= 10) {
+  //     await scheduleTabletNotification(newMedicine);
+  //   }
+  //   setDialogVisible(false);
+  // };
+  // const removeMedicine = async id => {
+  //   try {
+  //     const medicineToDelete = medicines.find(medicine => medicine.id === id);
 
-      if (medicineToDelete) {
-        const scheduledId = medicineToDelete.data?.identifier;
+  //     if (medicineToDelete) {
+  //       const scheduledId = medicineToDelete.data?.identifier;
 
-        if (scheduledId) {
-          await Notifications.cancelScheduledNotificationAsync(scheduledId);
-        }
+  //       if (scheduledId) {
+  //         await Notifications.cancelScheduledNotificationAsync(scheduledId);
+  //       }
 
-        setNotifications(prevMedicines =>
-          prevMedicines.filter(medicine => medicine.id !== id),
-        );
-      }
-    } catch (error) {
-      console.error('Błąd podczas usuwania powiadomienia:', error);
-    }
-  };
+  //       setNotifications(prevMedicines =>
+  //         prevMedicines.filter(medicine => medicine.id !== id),
+  //       );
+  //     }
+  //   } catch (error) {
+  //     console.error('Błąd podczas usuwania powiadomienia:', error);
+  //   }
+  // };
   // const loadNotifications = async () => {
   //   try {
   //     const response = await axios.get(`${BASE_URL}/users/${user_id}/medicines.json`);
@@ -352,73 +351,7 @@ export default function MedicineScreen({navigation}) {
                 />
               </View>
             )}
-            <Text style={styles.text}>Dodaj leki i ich ilość:</Text>
-            <IconButton
-              icon="plus"
-              mode="contained"
-              iconColor="black"
-              size={40}
-              onPress={showDialog}
-              style={{backgroundColor: '#ece6f2'}} // Set the background color here
-            />
-            {/* <TextInput
-            value={tabletsCount}
-            onChangeText={handleTabletsCountChange}
-            style={styles.input}
-            keyboardType="numeric"
-          /> */}
           </View>
-
-          <Portal>
-            {/* <Dialog
-              visible={dialogVisible}
-              style={{borderRadius: 10}}
-              onDismiss={hideDialog}>
-              <Dialog.Title>Dodaj nowe leki i ich ilość: </Dialog.Title>
-              <Dialog.Content>
-                <TextInput
-                  mode="outlined"
-                  outlineColor="#8a66af"
-                  activeOutlineColor="#8a66af"
-                  label="Nazwa leku"
-                  value={title}
-                  onChangeText={text => setTitle(text)}
-                  style={styles.text}
-                />
-                <TextInput
-                  mode="outlined"
-                  outlineColor="#8a66af"
-                  activeOutlineColor="#8a66af"
-                  label="Opis"
-                  value={description}
-                  onChangeText={text => setDescription(text)}
-                  style={styles.text}
-                />
-              </Dialog.Content>
-              <Dialog.Actions>
-                <Button
-                  title="Dodaj"
-                  onPress={addMedicine}
-                  style={styles.button}
-                  color="black"
-                />
-                <Button
-                  title="Zamknij"
-                  onPress={() => setDialogVisible(false)}
-                  style={styles.button}
-                  color="black"
-                />
-              </Dialog.Actions>
-            </Dialog> */}
-          </Portal>
-          <Portal.Host>
-            <FlatList
-              data={medicines}
-              renderItem={renderItem}
-              keyExtractor={item => item.id}
-              style={{marginTop: 20}}
-            />
-          </Portal.Host>
         </ImageBackground>
       </TouchableWithoutFeedback>
     </PaperProvider>

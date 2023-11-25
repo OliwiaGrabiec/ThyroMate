@@ -34,6 +34,7 @@ export default function DetailScreen({route}) {
   const [dialogVisible, setDialogVisible] = useState(false);
   const [user_id, setUserId] = useState('');
   const [testsDetail, setTestsDetail] = useState([]);
+  const [testsDetail2, setTestsDetail2] = useState([]);
   const [testResult, setTestResult] = useState([]);
 
   const authCtx = useContext(AuthContext);
@@ -59,16 +60,16 @@ export default function DetailScreen({route}) {
     return jsonPayload.user_id;
   }
 
-  // useFocusEffect(
-  //   React.useCallback(() => {
-  //     setUserId(getUserIdFromToken(token));
-  //     loadDetail();
-  //   }, [user_id]),
-  // );
+  useFocusEffect(
+    React.useCallback(() => {
+      setUserId(getUserIdFromToken(token));
+      loadDetail();
+    }, [user_id]),
+  );
 
-  useEffect(() => {
-    setUserId(getUserIdFromToken(token));
-  }, []);
+  // useEffect(() => {
+  //   setUserId(getUserIdFromToken(token));
+  // }, []);
   useEffect(() => {
     loadDetail();
   }, [testsDetail]);
@@ -86,7 +87,7 @@ export default function DetailScreen({route}) {
   const data = {
     labels:
       testsDetail.length > 0
-        ? testsDetail.map(detail => {
+        ? testsDetail2.map(detail => {
             const [datePart] = detail.date.split(', ');
             const [day, month] = datePart.split('/');
             return `${day}/${month}`;
@@ -95,13 +96,14 @@ export default function DetailScreen({route}) {
     datasets: [
       {
         data:
-          testsDetail.length > 0
-            ? testsDetail.map(detail => parseFloat(detail.title1))
+          testsDetail2.length > 0
+            ? testsDetail2.map(detail => parseFloat(detail.title1))
             : [0, 0, 0, 0, 0],
       },
     ],
   };
   const loadDetail = async () => {
+    console.log('hej');
     try {
       const response = await axios.get(
         `${BASE_URL}/users/${user_id}/history/${title}.json`,
@@ -113,8 +115,8 @@ export default function DetailScreen({route}) {
           id: key,
         });
       }
-      console.log(testsDetail);
-      setTestsDetail(loadedTestsDetail);
+      console.log(testsDetail2);
+      setTestsDetail2(loadedTestsDetail);
     } catch (error) {
       console.error('Błąd podczas wczytywania powiadomień z Firebase:', error);
     }
@@ -151,7 +153,7 @@ export default function DetailScreen({route}) {
       await axios.delete(
         `${BASE_URL}/users/${user_id}/history/${title}/${id}.json`,
       );
-      setTestsDetail(prevTestsDetail =>
+      setTestsDetail2(prevTestsDetail =>
         prevTestsDetail.filter(testDetail => testDetail.id !== id),
       );
     } catch (error) {
@@ -264,7 +266,7 @@ export default function DetailScreen({route}) {
         <Portal.Host>
           <Text style={{fontSize: 18, marginLeft: 10}}>Historia wyników:</Text>
           <FlatList
-            data={testsDetail}
+            data={testsDetail2}
             renderItem={renderItem}
             keyExtractor={item => item.id}
             style={{marginTop: 20}}

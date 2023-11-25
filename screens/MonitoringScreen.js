@@ -24,7 +24,7 @@ export default function MonitoringScreen({navigation}) {
   const [dialogVisible, setDialogVisible] = useState(false);
   const [user_id, setUserId] = useState('');
   const [tests, setTests] = useState([]);
-  const [id, setId] = useState('');
+  const [tests2, setTests2] = useState([]);
 
   const authCtx = useContext(AuthContext);
   const token = authCtx.token;
@@ -74,7 +74,7 @@ export default function MonitoringScreen({navigation}) {
           id: key,
         });
       }
-      setTests(loadedTests);
+      setTests2(loadedTests);
     } catch (error) {
       console.error('Błąd podczas wczytywania powiadomień z Firebase:', error);
     }
@@ -111,7 +111,7 @@ export default function MonitoringScreen({navigation}) {
   const removeTests = async id => {
     try {
       await axios.delete(`${BASE_URL}/users/${user_id}/tests/${id}.json`);
-      setTests(prevTests => prevTests.filter(test => test.id !== id));
+      setTests2(prevTests => prevTests.filter(test => test.id !== id));
     } catch (error) {
       console.error('Błąd podczas usuwania powiadomienia:', error);
     }
@@ -176,7 +176,7 @@ export default function MonitoringScreen({navigation}) {
         </Portal>
         <Portal.Host>
           <FlatList
-            data={tests}
+            data={tests2}
             renderItem={renderItem}
             keyExtractor={item => item.id}
             style={{marginTop: 20}}

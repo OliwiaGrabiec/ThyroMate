@@ -1,15 +1,17 @@
 import React, {useState, useEffect, useContext} from 'react';
-import {View, Text, FlatList, Button, Platform, Pressable} from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  ImageBackground,
+  Button,
+  Platform,
+  Pressable,
+} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Notifications from 'expo-notifications';
-import {StyleSheet} from 'react-native';
-import {
-  Portal,
-  PaperProvider,
-  Dialog,
-  Surface,
-  IconButton,
-} from 'react-native-paper';
+import {StyleSheet, Modal} from 'react-native';
+import {Portal, PaperProvider, Dialog, Surface} from 'react-native-paper';
 import {TextInput} from 'react-native-paper';
 import axios from 'axios';
 import {AuthContext} from '../store/auth-context';
@@ -21,7 +23,7 @@ import {ActionButton} from '../components/ui/ActionButton';
 
 const BASE_URL = 'https://logow-576ee-default-rtdb.firebaseio.com/';
 
-export default function NotificationsScreen() {
+export default function NotificationsScreen({navigation}) {
   const [notifications, setNotifications] = useState([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -54,18 +56,12 @@ export default function NotificationsScreen() {
     return jsonPayload.user_id;
   }
 
-  // useFocusEffect(
-  //   React.useCallback(() => {
-  //     setUserId(getUserIdFromToken(token));
-  //     loadNotifications();
-  //   }, [user_id]),
-  // );
-  useEffect(() => {
-    setUserId(getUserIdFromToken(token));
-  }, []);
-  useEffect(() => {
-    loadNotifications();
-  }, [notifications]);
+  useFocusEffect(
+    React.useCallback(() => {
+      setUserId(getUserIdFromToken(token));
+      loadNotifications();
+    }, [user_id]),
+  );
 
   const loadNotifications = async () => {
     try {
@@ -161,8 +157,6 @@ export default function NotificationsScreen() {
   };
 
   const handleDateChange = (event, selectedDate) => {
-    //setShowDatePicker(true);
-    // setShowDatePicker(Platform.OS === 'ios');
     setDate(selectedDate || date);
   };
 
@@ -179,13 +173,23 @@ export default function NotificationsScreen() {
           onPress={() => removeNotification(item.id)}
           color="red"
         />
+        <Button
+          title="Dodaj zalecenia"
+          onPress={() =>
+            navigation.navigate('AddRec', {title: item.title, date: item.date})
+          }
+          style={styles.button}
+          color="black"
+        />
       </Surface>
     </View>
   );
 
   return (
     <PaperProvider>
-      <View style={{flex: 1, padding: 30}}>
+      <ImageBackground
+        source={require('../assets/tlo.png')}
+        style={styles.rootContainer}>
         <ActionButton onPress={showDialog} />
 
         <Portal>
@@ -270,11 +274,17 @@ export default function NotificationsScreen() {
             style={{marginTop: 20}}
           />
         </Portal.Host>
-      </View>
+      </ImageBackground>
     </PaperProvider>
   );
 }
 const styles = StyleSheet.create({
+  rootContainer: {
+    flex: 1,
+    padding: 20,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+  },
   button: {
     alignItems: 'center',
     justifyContent: 'center',
