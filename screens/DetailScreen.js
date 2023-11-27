@@ -63,7 +63,7 @@ export default function DetailScreen({route}) {
   useFocusEffect(
     React.useCallback(() => {
       setUserId(getUserIdFromToken(token));
-      loadDetail();
+      // loadDetail();
     }, [user_id]),
   );
 
@@ -71,8 +71,31 @@ export default function DetailScreen({route}) {
   //   setUserId(getUserIdFromToken(token));
   // }, []);
   useEffect(() => {
+    const loadDetail = async () => {
+      console.log('hej');
+      try {
+        await axios
+          .get(`${BASE_URL}/users/${user_id}/history/${title}.json`)
+          .then(response => {
+            const loadedTestsDetail = [];
+            for (const key in response.data) {
+              loadedTestsDetail.push({
+                ...response.data[key],
+                id: key,
+              });
+            }
+            console.log(testsDetail2);
+            setTestsDetail2(loadedTestsDetail);
+          });
+      } catch (error) {
+        console.error(
+          'Błąd podczas wczytywania powiadomień z Firebase:',
+          error,
+        );
+      }
+    };
     loadDetail();
-  }, [testsDetail]);
+  }, [user_id]);
 
   const handleTitle1Change = text => {
     const formattedText = text.replace(',', '.');
@@ -102,25 +125,25 @@ export default function DetailScreen({route}) {
       },
     ],
   };
-  const loadDetail = async () => {
-    console.log('hej');
-    try {
-      const response = await axios.get(
-        `${BASE_URL}/users/${user_id}/history/${title}.json`,
-      );
-      const loadedTestsDetail = [];
-      for (const key in response.data) {
-        loadedTestsDetail.push({
-          ...response.data[key],
-          id: key,
-        });
-      }
-      console.log(testsDetail2);
-      setTestsDetail2(loadedTestsDetail);
-    } catch (error) {
-      console.error('Błąd podczas wczytywania powiadomień z Firebase:', error);
-    }
-  };
+  // const loadDetail = async () => {
+  //   console.log('hej');
+  //   try {
+  //     const response = await axios.get(
+  //       `${BASE_URL}/users/${user_id}/history/${title}.json`,
+  //     );
+  //     const loadedTestsDetail = [];
+  //     for (const key in response.data) {
+  //       loadedTestsDetail.push({
+  //         ...response.data[key],
+  //         id: key,
+  //       });
+  //     }
+  //     console.log(testsDetail2);
+  //     setTestsDetail2(loadedTestsDetail);
+  //   } catch (error) {
+  //     console.error('Błąd podczas wczytywania powiadomień z Firebase:', error);
+  //   }
+  // };
 
   const addDetail = async () => {
     if (!title1.trim()) {

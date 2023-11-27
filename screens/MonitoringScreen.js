@@ -59,8 +59,29 @@ export default function MonitoringScreen({navigation}) {
     setUserId(getUserIdFromToken(token));
   }, []);
   useEffect(() => {
+    const loadTests = async () => {
+      try {
+        await axios
+          .get(`${BASE_URL}/users/${user_id}/tests.json`)
+          .then(response => {
+            const loadedTests = [];
+            for (const key in response.data) {
+              loadedTests.push({
+                ...response.data[key],
+                id: key,
+              });
+            }
+            setTests2(loadedTests);
+          });
+      } catch (error) {
+        console.error(
+          'Błąd podczas wczytywania powiadomień z Firebase:',
+          error,
+        );
+      }
+    };
     loadTests();
-  }, [tests]);
+  }, [user_id]);
 
   const loadTests = async () => {
     try {

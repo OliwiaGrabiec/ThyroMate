@@ -13,87 +13,33 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
-import {Switch, TextInput} from 'react-native-paper';
+import {Switch} from 'react-native-paper';
 import {DateTime} from 'luxon';
-import {
-  Portal,
-  PaperProvider,
-  Dialog,
-  Surface,
-  IconButton,
-} from 'react-native-paper';
+import {PaperProvider} from 'react-native-paper';
+import {useRegisterNotifications} from '../hooks/useRegisterNotifications';
 
 export default function MedicineScreen({navigation}) {
   const [wantsNotification, setWantsNotification] = useState(false);
   const [notificationTime, setNotificationTime] = useState('');
   const [tookMedicine, setTookMedicine] = useState(false);
   const [notificationId, setNotificationId] = useState(null);
-  const [tabletsCount, setTabletsCount] = useState('');
-  // const [startDate, setStartDate] = useState(null);
-  // const [medicines, setMedicines] = useState([]);
-  // const [title, setTitle] = useState('');
-  // const [count, setCount] = useState(null);
-  // const [dialogVisible, setDialogVisible] = useState(false);
+  const [pickerTime, setPickerTime] = useState(new Date());
+  const [] = useRegisterNotifications();
 
-  const showDialog = () => setDialogVisible(true);
-
-  const hideDialog = () => setDialogVisible(false);
-
-  const loadInitialState = async () => {
-    const storedTookMedicine = await AsyncStorage.getItem('tookMedicine');
-    const storedNotificationTime =
-      await AsyncStorage.getItem('notificationTime');
-    if (storedTookMedicine !== null)
-      setTookMedicine(JSON.parse(storedTookMedicine));
-    if (storedNotificationTime !== null)
-      setNotificationTime(storedNotificationTime);
-  };
-  const loadStartDate = async () => {
-    const storedStartDate = await AsyncStorage.getItem('startDate');
-    if (storedStartDate) setStartDate(storedStartDate);
-  };
   useEffect(() => {
-    loadStartDate();
+    const loadInitialState = async () => {
+      const storedTookMedicine = await AsyncStorage.getItem('tookMedicine');
+      const storedNotificationTime =
+        await AsyncStorage.getItem('notificationTime');
+      if (storedTookMedicine !== null) {
+        setTookMedicine(JSON.parse(storedTookMedicine));
+      }
+      if (storedNotificationTime !== null) {
+        setNotificationTime(storedNotificationTime);
+      }
+    };
+
     loadInitialState();
-  }, []);
-
-  useEffect(() => {
-    const updateTabletsCount = async () => {
-      if (tabletsCount > 0) {
-        const updatedCount = tabletsCount - 1;
-        setTabletsCount(updatedCount);
-        await AsyncStorage.setItem('tabletsCount', String(updatedCount));
-      }
-    };
-    const checkTimeAndUpdateCount = async () => {
-      const now = DateTime.local().setZone('Europe/Warsaw');
-      if (now.hour === 0 && now.minute === 0) {
-        await updateTabletsCount();
-        setTookMedicine(false);
-        AsyncStorage.setItem('tookMedicine', 'false');
-      }
-    };
-
-    const intervalId = setInterval(checkTimeAndUpdateCount, 60000);
-
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [tabletsCount]);
-
-  useEffect(() => {
-    const polandTime = DateTime.local().setZone('Europe/Warsaw');
-    const midnightResetTimer = setInterval(() => {
-      const now = DateTime.local().setZone('Europe/Warsaw');
-      if (now.hour === 0 && now.minute === 0) {
-        setTookMedicine(false);
-        AsyncStorage.setItem('tookMedicine', 'false');
-      }
-    }, 60000);
-
-    return () => {
-      clearInterval(midnightResetTimer);
-    };
   }, []);
 
   useEffect(() => {
@@ -114,102 +60,71 @@ export default function MedicineScreen({navigation}) {
     }
   }, [wantsNotification, notificationTime]);
 
-  // useEffect(() => {
-  //   // Funkcja do przywrócenia ID powiadomienia z AsyncStorage
-  //   const restoreTabletNotificationId = async () => {
-  //     try {
-  //       const storedTookMedicine = await AsyncStorage.getItem('tookMedicine');
-  //       if (storedTookMedicine !== null) {
-  //         setTookMedicine(JSON.parse(storedTookMedicine));
-  //       }
-  //     } catch (error) {
-  //       console.error('Error parsing tookMedicine:', error);
-  //       // Handle the error, for example by resetting the stored value
-  //     }
-  //   };
-  //   restoreTabletNotificationId();
-  // }, []);
-
-  // const calculateNotificationDate = count => {
-  //   const daysBeforeEnd = count - 10;
-  //   const currentDate = DateTime.local().setZone('Europe/Warsaw');
-  //   const notificationDate = currentDate.plus({days: daysBeforeEnd});
-  //   return notificationDate;
-  // };
-
-  // const scheduleTabletNotification = async date => {
-  //   const id = await Notifications.scheduleNotificationAsync({
-  //     content: {
-  //       title: 'Zapas leków kończy się',
-  //       body: 'Pozostało 10 dni zapasu leków.',
-  //     },
-  //     trigger: {
-  //       year: date.year,
-  //       month: date.month,
-  //       day: date.day,
-  //       hour: 10,
-  //       minute: 42,
-  //       repeats: false,
-  //     },
-  //   });
-  //   return id;
-  // };
   const scheduleDailyNotification = async (hour, minute) => {
-    const now = DateTime.local();
-    const triggerTime = now.set({hour, minute});
-
+    // await Notifications.scheduleNotificationAsync({
+    //   content: {title: title, body: description},
+    //   trigger: {seconds: 10},
+    //   //{seconds: triggerTime / 1000},
+    // })
+    //   .then(async notifyId => {
+    //     console.log('ahs', notifyId);
+    //   })
+    //   .catch(err => console.error('bladf', err));
+    const triggerTime = new Date();
+    triggerTime.setHours(hour, minute, 0, 0);
     const id = await Notifications.scheduleNotificationAsync({
       content: {
         title: 'Czas na leki',
         body: 'Zaznacz, że wziąłeś leki.',
       },
       trigger: {
-        hour: triggerTime.hour,
-        minute: triggerTime.minute,
+        hour: triggerTime.getHours(),
+        minute: triggerTime.getMinutes(),
         repeats: true,
       },
-    });
+    })
+      .then(notifyId => {
+        console.log('ahs', notifyId);
+        AsyncStorage.setItem('notifyId', notifyId);
+      })
+      .catch(err => console.error('bladf', err));
 
     setNotificationId(id);
+
     AsyncStorage.setItem('notificationTime', `${hour}:${minute}`);
     return id;
   };
 
   const handleTimeChange = async (event, selectedTime) => {
-    setTimePickerVisible(false);
-    if (selectedTime) {
-      const timeString = selectedTime.toLocaleTimeString().slice(0, 5);
+    const currentTime = selectedTime || pickerTime;
+    console.log(selectedTime, pickerTime);
+    setPickerTime(currentTime);
+    if (currentTime) {
+      const timeString = currentTime.toLocaleTimeString().slice(0, 5);
       setNotificationTime(timeString);
       if (wantsNotification) {
-        try {
-          if (notificationId) {
-            await Notifications.cancelScheduledNotificationAsync(
-              notificationId,
-            );
-          }
-          const [hour, minute] = timeString.split(':');
-          const newNotificationId = await scheduleDailyNotification(
-            Number(hour),
-            Number(minute),
-          );
-
-          // Check that newNotificationId is not undefined before attempting to set it in AsyncStorage
-          if (newNotificationId) {
-            setNotificationId(newNotificationId);
-            await AsyncStorage.setItem('notificationTime', `${hour}:${minute}`);
-            await AsyncStorage.setItem(
-              'notificationId',
-              newNotificationId.toString(),
-            ); // Make sure to convert to string
-          } else {
-            // Handle the case where newNotificationId is undefined
-            console.error('Failed to get a new notification ID');
-          }
-        } catch (e) {
-          // Handle the error
-          console.error(e);
-        }
+        //await handleNotificationUpdate(timeString);
       }
+    }
+  };
+
+  const handleNotificationUpdate = async timeString => {
+    try {
+      const id = AsyncStorage.getItem('notifyId');
+      if (id) {
+        await Notifications.cancelScheduledNotificationAsync(id);
+      }
+      const [hour, minute] = timeString.split(':');
+      await scheduleDailyNotification(Number(hour), Number(minute))
+        .then(notifyId => {
+          console.log('ahs', notifyId);
+          AsyncStorage.setItem('notifyId', notifyId);
+        })
+        .catch(err => console.error('bladf', err));
+      // await setNotificationId(newNotificationId);
+      AsyncStorage.setItem('notificationTime', timeString);
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -217,103 +132,6 @@ export default function MedicineScreen({navigation}) {
     setTookMedicine(value);
     AsyncStorage.setItem('tookMedicine', JSON.stringify(value));
   };
-
-  // const handleTabletsCountChange = async count => {
-  //   setTabletsCount(count);
-  //   const currentCount = parseInt(count, 10);
-  //   const storedNotificationId = await AsyncStorage.getItem(
-  //     'tabletNotificationId',
-  //   );
-  //   if (notificationId) {
-  //     await Notifications.cancelScheduledNotificationAsync(
-  //       storedNotificationId,
-  //     );
-  //   }
-
-  //   if (currentCount === 10) {
-  //     const currentDate = DateTime.local().setZone('Europe/Warsaw');
-  //     AsyncStorage.setItem('startDate', currentDate.toString());
-  //     setStartDate(currentDate.toString());
-
-  //     const notificationDate = calculateNotificationDate(currentCount);
-  //     const id = await scheduleTabletNotification(notificationDate);
-  //     setNotificationId(id);
-  //     await AsyncStorage.setItem('tabletNotificationId', id);
-  //   }
-  // };
-
-  // const renderItem = ({item}) => (
-  //   <View style={{paddingVertical: 5}}>
-  //     <Surface style={styles.surface} elevation={4}>
-  //       <Text style={{fontSize: 16, fontWeight: 'bold', marginBottom: 5}}>
-  //         {item.title}
-  //       </Text>
-  //       <Text>{item.count}</Text>
-  //       <Button
-  //         title="Usuń"
-  //         onPress={() => removeMedicine(item.id)}
-  //         color="red"
-  //       />
-  //     </Surface>
-  //   </View>
-  // );
-
-  // const addMedicine = async () => {
-  //   const newMedicine = {
-  //     id: Date.now().toString(),
-  //     title,
-  //     count: count,
-  //   };
-  //   setMedicines([...medicines, newMedicine]);
-  //   setTitle('');
-  //   setCount('');
-  //   try {
-  //     await AsyncStorage.setItem('medicines', JSON.stringify(medicines));
-  //   } catch (error) {
-  //     console.error(
-  //       'Błąd podczas zapisywania powiadomień w async storage',
-  //       error,
-  //     );
-  //   }
-  //   if (count <= 10) {
-  //     await scheduleTabletNotification(newMedicine);
-  //   }
-  //   setDialogVisible(false);
-  // };
-  // const removeMedicine = async id => {
-  //   try {
-  //     const medicineToDelete = medicines.find(medicine => medicine.id === id);
-
-  //     if (medicineToDelete) {
-  //       const scheduledId = medicineToDelete.data?.identifier;
-
-  //       if (scheduledId) {
-  //         await Notifications.cancelScheduledNotificationAsync(scheduledId);
-  //       }
-
-  //       setNotifications(prevMedicines =>
-  //         prevMedicines.filter(medicine => medicine.id !== id),
-  //       );
-  //     }
-  //   } catch (error) {
-  //     console.error('Błąd podczas usuwania powiadomienia:', error);
-  //   }
-  // };
-  // const loadNotifications = async () => {
-  //   try {
-  //     const response = await axios.get(`${BASE_URL}/users/${user_id}/medicines.json`);
-  //     const loadedNotifications = [];
-  //     for (const key in response.data) {
-  //       loadedNotifications.push({
-  //         ...response.data[key],
-  //         id: key
-  //       });
-  //     }
-  //     setMedicines(loadedNotifications);
-  //   } catch (error) {
-  //     console.error('Błąd podczas wczytywania powiadomień z Firebase:', error);
-  //   }
-  // };
   return (
     <PaperProvider>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -347,7 +165,6 @@ export default function MedicineScreen({navigation}) {
                   is24Hour={true}
                   display="default"
                   onChange={handleTimeChange}
-                  style={{}}
                 />
               </View>
             )}

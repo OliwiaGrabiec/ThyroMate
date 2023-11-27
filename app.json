@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "ThyroMate",
-    "slug": "ThyroMate",
+    "slug": "thyromate",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/thyromate.png",
@@ -11,7 +11,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
     },
@@ -23,6 +25,12 @@
     },
     "web": {
       "favicon": "./assets/thyromate.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "a55e325d-76f6-4c6d-886f-088511446d92"
+      }
+    },
+    "owner": "oliwia911"
   }
 }

@@ -49,31 +49,59 @@ export default function RecScreen({navigation}) {
   useFocusEffect(
     React.useCallback(() => {
       setUserId(getUserIdFromToken(token));
-      loadRecommendations();
     }, [user_id]),
   );
-
-  const loadRecommendations = async () => {
-    console.log('User ID:', user_id);
-    try {
-      const response = await axios.get(
-        `${BASE_URL}/users/${user_id}/recommendations.json`,
-      );
-      console.log(response);
-      const loadedRecommendations = [];
-      for (const key in response.data) {
-        loadedRecommendations.push({
-          ...response.data[key],
-          id: key,
-        });
+  useEffect(() => {
+    const loadRecommendations = async () => {
+      try {
+        await axios
+          .get(`${BASE_URL}/users/${user_id}/recommendations.json`)
+          .then(response => {
+            const loadedRecommendations = [];
+            for (const key in response.data) {
+              loadedRecommendations.push({
+                ...response.data[key],
+                id: key,
+              });
+            }
+            console.log('hej');
+            setRecommendations(loadedRecommendations);
+            console.log(recommendations);
+          })
+          .catch(err => console.error('bladf', err));
+      } catch (error) {
+        console.error(
+          'Błąd podczas wczytywania powiadomień z Firebase:',
+          error,
+        );
       }
-      setRecommendations(loadedRecommendations);
-      console.log(recommendations);
-    } catch (error) {
-      console.error('Błąd podczas wczytywania powiadomień z Firebase:', error);
-    }
-  };
+    };
 
+    loadRecommendations();
+    console.log(user_id);
+  }, [user_id]);
+
+  // const loadRecommendations = async () => {
+  //   try {
+  //     await axios
+  //       .get(`${BASE_URL}/users/${user_id}/recommendations.json`)
+  //       .then(response => {
+  //         const loadedRecommendations = [];
+  //         for (const key in response.data) {
+  //           loadedRecommendations.push({
+  //             ...response.data[key],
+  //             id: key,
+  //           });
+  //         }
+  //         console.log('hej');
+  //         setRecommendations(loadedRecommendations);
+  //         console.log(recommendations);
+  //       })
+  //       .catch(err => console.error('bladf', err));
+  //   } catch (error) {
+  //     console.error('Błąd podczas wczytywania powiadomień z Firebase:', error);
+  //   }
+  // };
   const removeRecommendation = async id => {
     try {
       const recommendationToDelete = recommendations.find(

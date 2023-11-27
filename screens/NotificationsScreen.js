@@ -20,6 +20,7 @@ import {useFocusEffect} from '@react-navigation/native';
 import {Picker} from '@react-native-picker/picker';
 import Checkbox from 'expo-checkbox';
 import {ActionButton} from '../components/ui/ActionButton';
+import {useRegisterNotifications} from '../hooks/useRegisterNotifications';
 
 const BASE_URL = 'https://logow-576ee-default-rtdb.firebaseio.com/';
 
@@ -32,6 +33,8 @@ export default function NotificationsScreen({navigation}) {
   const [user_id, setUserId] = useState('');
   const [isReminderSet, setIsReminderSet] = useState(false);
   const [reminderTime, setReminderTime] = useState('0');
+  const [notifyId, setNotifyId] = useState('');
+  const [] = useRegisterNotifications();
 
   const authCtx = useContext(AuthContext);
   const token = authCtx.token;
@@ -59,29 +62,55 @@ export default function NotificationsScreen({navigation}) {
   useFocusEffect(
     React.useCallback(() => {
       setUserId(getUserIdFromToken(token));
-      loadNotifications();
+      //loadNotifications();
     }, [user_id]),
   );
-
-  const loadNotifications = async () => {
-    try {
-      const response = await axios.get(
-        `${BASE_URL}/users/${user_id}/notifications.json`,
-      );
-      const loadedNotifications = [];
-      for (const key in response.data) {
-        loadedNotifications.push({
-          ...response.data[key],
-          id: key,
-        });
+  useEffect(() => {
+    const loadNotifications = async () => {
+      try {
+        await await axios
+          .get(`${BASE_URL}/users/${user_id}/notifications.json`)
+          .then(response => {
+            const loadedNotifications = [];
+            for (const key in response.data) {
+              loadedNotifications.push({
+                ...response.data[key],
+                id: key,
+              });
+            }
+            console.log('hej');
+            setNotifications(loadedNotifications);
+          })
+          .catch(err => console.error('bladf', err));
+      } catch (error) {
+        console.error(
+          'Błąd podczas wczytywania powiadomień z Firebase:',
+          error,
+        );
       }
-      setNotifications(loadedNotifications);
-    } catch (error) {
-      console.error('Błąd podczas wczytywania powiadomień z Firebase:', error);
-    }
-  };
+    };
 
-  const addNotification = async () => {
+    loadNotifications();
+    console.log(user_id);
+  }, [user_id]);
+  // const loadNotifications = async () => {
+  //   try {
+  //     const response = await axios.get(
+  //       `${BASE_URL}/users/${user_id}/notifications.json`,
+  //     );
+  //     const loadedNotifications = [];
+  //     for (const key in response.data) {
+  //       loadedNotifications.push({
+  //         ...response.data[key],
+  //         id: key,
+  //       });
+  //     }
+  //     setNotifications(loadedNotifications);
+  //   } catch (error) {
+  //     console.error('Błąd podczas wczytywania powiadomień z Firebase:', error);
+  //   }
+  // };
+  const scheduleNotification = async () => {
     const notificationTime = new Date(date);
     if (reminderTime !== '0') {
       notificationTime.setHours(
@@ -93,40 +122,44 @@ export default function NotificationsScreen({navigation}) {
     const trigger = date.getTime() - new Date().getTime();
 
     if (isReminderSet) {
-      const notificationContent = {
-        title,
-        body: description,
-        data: {identifier},
-      };
-      console.log(identifier);
       await Notifications.scheduleNotificationAsync({
-        content: notificationContent,
-        trigger: {seconds: triggerTime / 1000},
-      });
+        content: {title: title, body: description},
+        trigger: {seconds: 10},
+        //{seconds: triggerTime / 1000},
+      })
+        .then(async notifyId => {
+          console.log('ahs', notifyId);
+          setNotifyId(notifyId);
+
+          const newNotification = {
+            id1: notifyId ? notifyId : ' ',
+            title,
+            description,
+            date: date.toLocaleString(),
+            trigger: trigger,
+          };
+          setNotifications([...notifications, newNotification]);
+          setTitle('');
+          setDescription('');
+          setDate(new Date());
+          try {
+            console.log(user_id);
+
+            const response = await axios.post(
+              `${BASE_URL}/users/${user_id}/notifications.json`,
+              newNotification,
+            );
+            newNotification.id = response.data.name;
+          } catch (error) {
+            console.error(
+              'Błąd podczas zapisywania powiadomień w Firebase:',
+              error,
+            );
+          }
+        })
+        .catch(err => console.error('bladf', err));
     }
 
-    const newNotification = {
-      id1: identifier,
-      title,
-      description,
-      date: date.toLocaleString(),
-      trigger: trigger,
-    };
-    setNotifications([...notifications, newNotification]);
-    setTitle('');
-    setDescription('');
-    setDate(new Date());
-    try {
-      console.log(user_id);
-
-      const response = await axios.post(
-        `${BASE_URL}/users/${user_id}/notifications.json`,
-        newNotification,
-      );
-      newNotification.id = response.data.name;
-    } catch (error) {
-      console.error('Błąd podczas zapisywania powiadomień w Firebase:', error);
-    }
     setDialogVisible(false);
   };
 
@@ -135,22 +168,21 @@ export default function NotificationsScreen({navigation}) {
       const notificationToDelete = notifications.find(
         notification => notification.id === id,
       );
+      if (!notificationToDelete) return;
 
-      if (notificationToDelete) {
-        console.log(notificationToDelete);
+      console.log(notificationToDelete);
 
-        const scheduledId = notificationToDelete.id1;
-        console.log(scheduledId);
-        if (scheduledId) {
-          await Notifications.cancelScheduledNotificationAsync(scheduledId);
-        }
-        await axios.delete(
-          `${BASE_URL}/users/${user_id}/notifications/${id}.json`,
-        );
-        setNotifications(prevNotifications =>
-          prevNotifications.filter(notification => notification.id !== id),
-        );
+      const scheduledId = notificationToDelete.id1;
+      console.log(scheduledId);
+      if (scheduledId) {
+        await Notifications.cancelScheduledNotificationAsync(scheduledId);
       }
+      await axios.delete(
+        `${BASE_URL}/users/${user_id}/notifications/${id}.json`,
+      );
+      setNotifications(prevNotifications =>
+        prevNotifications.filter(notification => notification.id !== id),
+      );
     } catch (error) {
       console.error('Błąd podczas usuwania powiadomienia:', error);
     }
@@ -170,7 +202,7 @@ export default function NotificationsScreen({navigation}) {
         <Text>{item.date}</Text>
         <Button
           title="Usuń"
-          onPress={() => removeNotification(item.id)}
+          onPress={async () => await removeNotification(item.id)}
           color="red"
         />
         <Button
@@ -253,7 +285,7 @@ export default function NotificationsScreen({navigation}) {
             <Dialog.Actions>
               <Button
                 title="Dodaj"
-                onPress={addNotification}
+                onPress={async () => await scheduleNotification()}
                 style={styles.button}
                 color="black"
               />

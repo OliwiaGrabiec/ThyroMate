@@ -76,16 +76,43 @@ const JournalScreen = () => {
   useFocusEffect(
     React.useCallback(() => {
       setUserId(getUserIdFromToken(token));
-      loadMoods();
+      //  loadMoods();
     }, [user_id]),
   );
   // useEffect(() => {
   //   loadMoods();
+  //   console.log(moodHistory);
   // }, [moodHistory]);
   useEffect(() => {
-    setUserId(getUserIdFromToken(token));
+    const loadMoods = async () => {
+      try {
+        await axios
+          .get(`${BASE_URL}/users/${user_id}/moods.json`)
+          .then(response => {
+            const loadedMoods = response.data || {};
+
+            const transformedMoods = {};
+            Object.entries(loadedMoods).forEach(([key, value]) => {
+              const dateKey = new Date(value.date).toISOString().split('T')[0];
+              transformedMoods[dateKey] = {...value, id: key};
+            });
+
+            setMoodHistory2(transformedMoods);
+            const newMarkedDates = {};
+            Object.entries(transformedMoods).forEach(([date, moodData]) => {
+              newMarkedDates[date] = {
+                marked: true,
+                dotColor: moods[moodData.mood],
+              };
+            });
+            setMarkedDates(newMarkedDates);
+          });
+      } catch (error) {
+        console.error('Error while loading mood data:', error);
+      }
+    };
     loadMoods();
-  }, []);
+  }, [user_id, moodHistory]);
   const moodNamesMap = {
     happy: 'szczęśliwy',
     tired: 'zmęczony',
@@ -149,32 +176,32 @@ const JournalScreen = () => {
       }
     }
   };
-  const loadMoods = async () => {
-    try {
-      const response = await axios.get(
-        `${BASE_URL}/users/${user_id}/moods.json`,
-      );
-      const loadedMoods = (await response.data) || {};
+  // const loadMoods = async () => {
+  //   try {
+  //     const response = await axios.get(
+  //       `${BASE_URL}/users/${user_id}/moods.json`,
+  //     );
+  //     const loadedMoods = (await response.data) || {};
 
-      const transformedMoods = {};
-      Object.entries(loadedMoods).forEach(([key, value]) => {
-        const dateKey = new Date(value.date).toISOString().split('T')[0];
-        transformedMoods[dateKey] = {...value, id: key};
-      });
+  //     const transformedMoods = {};
+  //     Object.entries(loadedMoods).forEach(([key, value]) => {
+  //       const dateKey = new Date(value.date).toISOString().split('T')[0];
+  //       transformedMoods[dateKey] = {...value, id: key};
+  //     });
 
-      setMoodHistory2(transformedMoods);
-      const newMarkedDates = {};
-      Object.entries(transformedMoods).forEach(([date, moodData]) => {
-        newMarkedDates[date] = {
-          marked: true,
-          dotColor: moods[moodData.mood],
-        };
-      });
-      setMarkedDates(newMarkedDates);
-    } catch (error) {
-      console.error('Error while loading mood data:', error);
-    }
-  };
+  //     setMoodHistory2(transformedMoods);
+  //     const newMarkedDates = {};
+  //     Object.entries(transformedMoods).forEach(([date, moodData]) => {
+  //       newMarkedDates[date] = {
+  //         marked: true,
+  //         dotColor: moods[moodData.mood],
+  //       };
+  //     });
+  //     setMarkedDates(newMarkedDates);
+  //   } catch (error) {
+  //     console.error('Error while loading mood data:', error);
+  //   }
+  // };
   const prepareChartData = (moods, selectedMonth) => {
     let moodCounts = {};
     Object.entries(moods).forEach(([date, moodData]) => {

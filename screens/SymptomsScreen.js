@@ -78,8 +78,43 @@ export default function SymptomsScreen({navigation}) {
   }, []);
 
   useEffect(() => {
+    const loadSymptomsForDay = async () => {
+      try {
+        await axios
+          .get(`${BASE_URL}/users/${user_id}/symptoms.json`)
+          .then(response => {
+            const symptomsForAgenda = {};
+            const loadedSymptoms = [];
+            for (const key in response.data) {
+              loadedSymptoms.push({
+                ...response.data[key],
+                id: key,
+              });
+
+              const symptom = response.data[key];
+              const formattedSymptomDate = parseAndFormatDate(symptom.date);
+
+              if (!symptomsForAgenda[formattedSymptomDate]) {
+                symptomsForAgenda[formattedSymptomDate] = [];
+              }
+
+              symptomsForAgenda[formattedSymptomDate].push({
+                //...symptom,
+                id: key,
+                title: symptom.title,
+                description: symptom.description,
+                rate: symptom.rate,
+              });
+            }
+            setItems({...symptomsForAgenda});
+            setSymptoms(loadedSymptoms);
+          });
+      } catch (error) {
+        console.error('Błąd podczas wczytywania objawów z Firebase:', error);
+      }
+    };
     loadSymptomsForDay();
-  }, [date]);
+  }, [user_id, date]);
 
   const onDayPress = day => {
     setDate(new Date(day.timestamp));
@@ -93,40 +128,40 @@ export default function SymptomsScreen({navigation}) {
     const date = new Date(year, month - 1, day, hours, minutes, seconds);
     return format(date, 'yyyy-MM-dd');
   };
-  const loadSymptomsForDay = async () => {
-    try {
-      const response = await axios.get(
-        `${BASE_URL}/users/${user_id}/symptoms.json`,
-      );
-      const symptomsForAgenda = {};
-      const loadedSymptoms = [];
-      for (const key in response.data) {
-        loadedSymptoms.push({
-          ...response.data[key],
-          id: key,
-        });
+  // const loadSymptomsForDay = async () => {
+  //   try {
+  //     const response = await axios.get(
+  //       `${BASE_URL}/users/${user_id}/symptoms.json`,
+  //     );
+  //     const symptomsForAgenda = {};
+  //     const loadedSymptoms = [];
+  //     for (const key in response.data) {
+  //       loadedSymptoms.push({
+  //         ...response.data[key],
+  //         id: key,
+  //       });
 
-        const symptom = response.data[key];
-        const formattedSymptomDate = parseAndFormatDate(symptom.date);
+  //       const symptom = response.data[key];
+  //       const formattedSymptomDate = parseAndFormatDate(symptom.date);
 
-        if (!symptomsForAgenda[formattedSymptomDate]) {
-          symptomsForAgenda[formattedSymptomDate] = [];
-        }
+  //       if (!symptomsForAgenda[formattedSymptomDate]) {
+  //         symptomsForAgenda[formattedSymptomDate] = [];
+  //       }
 
-        symptomsForAgenda[formattedSymptomDate].push({
-          //...symptom,
-          id: key,
-          title: symptom.title,
-          description: symptom.description,
-          rate: symptom.rate,
-        });
-      }
-      setItems({...symptomsForAgenda});
-      setSymptoms(loadedSymptoms);
-    } catch (error) {
-      console.error('Błąd podczas wczytywania objawów z Firebase:', error);
-    }
-  };
+  //       symptomsForAgenda[formattedSymptomDate].push({
+  //         //...symptom,
+  //         id: key,
+  //         title: symptom.title,
+  //         description: symptom.description,
+  //         rate: symptom.rate,
+  //       });
+  //     }
+  //     setItems({...symptomsForAgenda});
+  //     setSymptoms(loadedSymptoms);
+  //   } catch (error) {
+  //     console.error('Błąd podczas wczytywania objawów z Firebase:', error);
+  //   }
+  // };
 
   const containerStyle = {backgroundColor: 'white', padding: 20};
   const addSymptoms = async () => {

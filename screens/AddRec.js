@@ -115,7 +115,7 @@ export default function AddRec({route}) {
 
         <Button
           title="Dodaj"
-          onPress={addRecommendation}
+          onPress={async () => await addRecommendation()}
           //style={styles.button}
           color="black"
         />
