@@ -1,5 +1,11 @@
-import React, {useContext, useState, useEffect} from 'react';
-import {View, Text, Button} from 'react-native';
+import React, {useContext, useState} from 'react';
+import {
+  View,
+  Text,
+  Button,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {StyleSheet} from 'react-native';
 import {PaperProvider, IconButton} from 'react-native-paper';
@@ -68,58 +74,68 @@ export default function AddRec({route}) {
       console.error('Błąd podczas zapisywania powiadomień w Firebase:', error);
     }
   };
+
   const handleDateChange = (event, selectedDate) => {
-    setDate(selectedDate || date2);
+    setDate2(selectedDate || date2);
   };
   return (
     <PaperProvider>
-      <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-        <Text>Dodaj nowe zalecenia:</Text>
-        {!title && (
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View
+          style={{
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          {!title && (
+            <TextInput
+              mode="outlined"
+              outlineColor="#8a66af"
+              activeOutlineColor="#8a66af"
+              label="Tytuł wizyty"
+              value={title2}
+              onChangeText={text => setTitle2(text)}
+              style={{width: Platform.OS === 'ios' ? 300 : null}}
+            />
+          )}
+
+          {!date && (
+            <>
+              <Text style={{marginTop: 20}}>Wybierz datę wizyty: </Text>
+
+              <DateTimePicker
+                value={date2}
+                mode="datetime"
+                display="default"
+                onChange={handleDateChange}
+                style={{marginTop: 20}}
+              />
+            </>
+          )}
           <TextInput
+            multiline
+            numberOfLines={6}
+            maxLength={40}
             mode="outlined"
             outlineColor="#8a66af"
             activeOutlineColor="#8a66af"
-            label="Tytuł wizyty"
-            value={title2}
-            onChangeText={text => setTitle2(text)}
-            //style={styles.text}
+            label="Opis"
+            value={description}
+            onChangeText={text => setDescription(text)}
+            style={{
+              height: Platform.OS === 'ios' ? 300 : null,
+              width: Platform.OS === 'ios' ? 300 : null,
+              marginTop: 20,
+            }}
           />
-        )}
-
-        {!date && (
-          <>
-            <Text>Wybierz datę wizyty: </Text>
-
-            <DateTimePicker
-              value={date2}
-              mode="datetime"
-              display="default"
-              onChange={handleDateChange}
-              //style={styles.czasdata}
-            />
-          </>
-        )}
-        <TextInput
-          multiline
-          numberOfLines={4}
-          maxLength={40}
-          mode="outlined"
-          outlineColor="#8a66af"
-          activeOutlineColor="#8a66af"
-          label="Opis"
-          value={description}
-          onChangeText={text => setDescription(text)}
-          //style={styles.text}
-        />
-
-        <Button
-          title="Dodaj"
-          onPress={async () => await addRecommendation()}
-          //style={styles.button}
-          color="black"
-        />
-      </View>
+          <Button
+            title="Dodaj"
+            onPress={async () => await addRecommendation()}
+            style={{marginTop: 20}}
+            color="purple"
+          />
+        </View>
+      </TouchableWithoutFeedback>
     </PaperProvider>
   );
 }

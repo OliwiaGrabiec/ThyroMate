@@ -7,6 +7,8 @@ import {
   Alert,
   Platform,
   Pressable,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {StyleSheet} from 'react-native';
@@ -95,7 +97,7 @@ export default function DetailScreen({route}) {
       }
     };
     loadDetail();
-  }, [user_id]);
+  }, [user_id, testsDetail]);
 
   const handleTitle1Change = text => {
     const formattedText = text.replace(',', '.');
@@ -200,102 +202,112 @@ export default function DetailScreen({route}) {
   );
   return (
     <PaperProvider>
-      <View style={{flex: 1, padding: 5}}>
-        <View
-          style={{
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-          <Text style={{fontSize: 20, fontWeight: 'bold'}}>{title}</Text>
-          <LineChart
-            data={data}
-            width={370}
-            height={300}
-            yAxisInterval={1}
-            chartConfig={{
-              backgroundGradientFrom: '#8a66af',
-              backgroundGradientTo: '#8a66af',
-              backgroundGradientToOpacity: 0.7,
-              color: (opacity = 1) => `rgba(35, 26, 44, ${opacity})`,
-              strokeWidth: 2,
-              barPercentage: 0.5,
-              useShadowColorFromDataset: false,
-
-              style: {},
-              propsForDots: {
-                r: '6',
-                strokeWidth: '2',
-                stroke: '#c5b3d7',
-              },
-            }}
-            bezier
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View style={{flex: 1, padding: 5}}>
+          <View
             style={{
-              marginVertical: 8,
-              borderRadius: 10,
-            }}
-          />
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+            <Text style={{fontSize: 20, fontWeight: 'bold'}}>{title}</Text>
+            <LineChart
+              data={data}
+              width={370}
+              height={300}
+              yAxisInterval={1}
+              chartConfig={{
+                backgroundGradientFrom: '#8a66af',
+                backgroundGradientTo: '#8a66af',
+                backgroundGradientToOpacity: 0.7,
+                color: (opacity = 1) => `rgba(35, 26, 44, ${opacity})`,
+                strokeWidth: 2,
+                barPercentage: 0.5,
+                useShadowColorFromDataset: false,
+
+                style: {},
+                propsForDots: {
+                  r: '6',
+                  strokeWidth: '2',
+                  stroke: '#c5b3d7',
+                },
+              }}
+              bezier
+              style={{
+                marginVertical: 8,
+                borderRadius: 10,
+              }}
+            />
+          </View>
+          <View
+            style={{
+              ...styles.shadow,
+              position: 'absolute',
+              bottom: 10,
+              right: 10,
+              zIndex: 999,
+            }}>
+            <IconButton
+              icon="plus"
+              mode="contained"
+              iconColor="black"
+              size={35}
+              onPress={showDialog}
+              style={{backgroundColor: '#8a66af'}}
+            />
+          </View>
+          <Portal>
+            <Dialog
+              visible={dialogVisible}
+              style={{borderRadius: 10}}
+              onDismiss={hideDialog}>
+              <TouchableWithoutFeedback
+                onPress={Keyboard.dismiss}
+                accessible={false}>
+                <View>
+                  <Dialog.Title>Dodaj wyniki badań: </Dialog.Title>
+                  <Dialog.Content>
+                    <TextInput
+                      mode="outlined"
+                      outlineColor="#8a66af"
+                      activeOutlineColor="#8a66af"
+                      label="Wynik Badania"
+                      value={title1}
+                      keyboardType="numeric"
+                      onChangeText={handleTitle1Change}
+                      style={styles.text}
+                    />
+                  </Dialog.Content>
+                  <Dialog.Actions>
+                    <Button
+                      title="Dodaj"
+                      onPress={addDetail}
+                      style={styles.button}
+                      color="black"
+                    />
+                    <Button
+                      title="Zamknij"
+                      onPress={() => setDialogVisible(false)}
+                      style={styles.button}
+                      color="black"
+                    />
+                  </Dialog.Actions>
+                </View>
+              </TouchableWithoutFeedback>
+            </Dialog>
+          </Portal>
+          <Portal.Host>
+            <Text style={{fontSize: 18, marginLeft: 10}}>
+              Historia wyników:
+            </Text>
+            <FlatList
+              data={testsDetail2}
+              renderItem={renderItem}
+              keyExtractor={item => item.id}
+              style={{marginTop: 20}}
+            />
+          </Portal.Host>
         </View>
-        <View
-          style={{
-            ...styles.shadow,
-            position: 'absolute',
-            bottom: 10,
-            right: 10,
-            zIndex: 999,
-          }}>
-          <IconButton
-            icon="plus"
-            mode="contained"
-            iconColor="black"
-            size={35}
-            onPress={showDialog}
-            style={{backgroundColor: '#8a66af'}}
-          />
-        </View>
-        <Portal>
-          <Dialog
-            visible={dialogVisible}
-            style={{borderRadius: 10}}
-            onDismiss={hideDialog}>
-            <Dialog.Title>Dodaj wyniki badań: </Dialog.Title>
-            <Dialog.Content>
-              <TextInput
-                mode="outlined"
-                outlineColor="#8a66af"
-                activeOutlineColor="#8a66af"
-                label="Wynik Badania"
-                value={title1}
-                keyboardType="numeric"
-                onChangeText={handleTitle1Change}
-                style={styles.text}
-              />
-            </Dialog.Content>
-            <Dialog.Actions>
-              <Button
-                title="Dodaj"
-                onPress={addDetail}
-                style={styles.button}
-                color="black"
-              />
-              <Button
-                title="Zamknij"
-                onPress={() => setDialogVisible(false)}
-                style={styles.button}
-                color="black"
-              />
-            </Dialog.Actions>
-          </Dialog>
-        </Portal>
-        <Portal.Host>
-          <Text style={{fontSize: 18, marginLeft: 10}}>Historia wyników:</Text>
-          <FlatList
-            data={testsDetail2}
-            renderItem={renderItem}
-            keyExtractor={item => item.id}
-            style={{marginTop: 20}}
-          />
-        </Portal.Host>
-      </View>
+      </TouchableWithoutFeedback>
     </PaperProvider>
   );
 }

@@ -1,9 +1,8 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   Keyboard,
   Button,
   FlatList,
@@ -12,126 +11,196 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import {AuthContext} from '../store/auth-context';
+import {Buffer} from 'buffer';
 import * as Notifications from 'expo-notifications';
 import {Switch} from 'react-native-paper';
-import {DateTime} from 'luxon';
-import {PaperProvider} from 'react-native-paper';
+import {
+  Portal,
+  PaperProvider,
+  Dialog,
+  Surface,
+  TextInput,
+} from 'react-native-paper';
+import {ActionButton} from '../components/ui/ActionButton';
 import {useRegisterNotifications} from '../hooks/useRegisterNotifications';
 
+const BASE_URL = 'https://logow-576ee-default-rtdb.firebaseio.com/';
+
 export default function MedicineScreen({navigation}) {
-  const [wantsNotification, setWantsNotification] = useState(false);
-  const [notificationTime, setNotificationTime] = useState('');
+  const [visible, setVisible] = useState(false);
+  const [title, setTitle] = useState('');
+  const [date, setDate] = useState(new Date());
   const [tookMedicine, setTookMedicine] = useState(false);
-  const [notificationId, setNotificationId] = useState(null);
-  const [pickerTime, setPickerTime] = useState(new Date());
   const [] = useRegisterNotifications();
+  const [user_id, setUserId] = useState('');
+  const [notifyId, setNotifyId] = useState('');
+  const [notifications, setNotifications] = useState([]);
+  const [notifications2, setNotifications2] = useState([]);
+  const [medications, setMedications] = useState([]);
+  const authCtx = useContext(AuthContext);
+  const token = authCtx.token;
+
+  function decodeBase64Url(str) {
+    str = str.replace(/-/g, '+').replace(/_/g, '/');
+    const missingPadding = 4 - (str.length % 4);
+    if (missingPadding) {
+      str += new Array(missingPadding + 1).join('=');
+    }
+    return Buffer.from(str, 'base64').toString('utf8');
+  }
+  function getUserIdFromToken(token) {
+    const payloadPart = token.split('.')[1];
+    const decodedPayload = decodeBase64Url(payloadPart);
+    const jsonPayload = JSON.parse(decodedPayload);
+    return jsonPayload.user_id;
+  }
+  const showModal = () => setVisible(true);
+  const hideModal = () => setVisible(false);
 
   useEffect(() => {
-    const loadInitialState = async () => {
-      const storedTookMedicine = await AsyncStorage.getItem('tookMedicine');
-      const storedNotificationTime =
-        await AsyncStorage.getItem('notificationTime');
-      if (storedTookMedicine !== null) {
-        setTookMedicine(JSON.parse(storedTookMedicine));
-      }
-      if (storedNotificationTime !== null) {
-        setNotificationTime(storedNotificationTime);
+    const userId = getUserIdFromToken(token);
+    setUserId(userId);
+  }, [user_id]);
+
+  useEffect(() => {
+    const loadMedicine = async () => {
+      try {
+        await await axios
+          .get(`${BASE_URL}/users/${user_id}/medicine.json`)
+          .then(response => {
+            const loadedNotifications = [];
+            for (const key in response.data) {
+              loadedNotifications.push({
+                ...response.data[key],
+                id: key,
+              });
+            }
+            console.log(response.data);
+            setNotifications2(loadedNotifications);
+          })
+          .catch(err => console.error('bladf', err));
+      } catch (error) {
+        console.error(
+          'Błąd podczas wczytywania powiadomień z Firebase:',
+          error,
+        );
       }
     };
 
-    loadInitialState();
-  }, []);
-
-  useEffect(() => {
-    if (wantsNotification && notificationTime) {
-      const updateNotification = async () => {
-        if (notificationId) {
-          await Notifications.cancelScheduledNotificationAsync(notificationId);
-        }
-        const [hour, minute] = notificationTime.split(':');
-        const newNotificationId = await scheduleDailyNotification(
-          Number(hour),
-          Number(minute),
-        );
-        setNotificationId(newNotificationId);
-      };
-
-      updateNotification();
-    }
-  }, [wantsNotification, notificationTime]);
-
-  const scheduleDailyNotification = async (hour, minute) => {
-    // await Notifications.scheduleNotificationAsync({
-    //   content: {title: title, body: description},
-    //   trigger: {seconds: 10},
-    //   //{seconds: triggerTime / 1000},
-    // })
-    //   .then(async notifyId => {
-    //     console.log('ahs', notifyId);
-    //   })
-    //   .catch(err => console.error('bladf', err));
-    const triggerTime = new Date();
-    triggerTime.setHours(hour, minute, 0, 0);
-    const id = await Notifications.scheduleNotificationAsync({
+    loadMedicine();
+    console.log(user_id);
+  }, [user_id, notifications]);
+  const addMedicine = async () => {
+    await Notifications.scheduleNotificationAsync({
       content: {
-        title: 'Czas na leki',
-        body: 'Zaznacz, że wziąłeś leki.',
+        title: title,
+        date: date,
+        sound: 'notifications-sound-127856.wav',
       },
-      trigger: {
-        hour: triggerTime.getHours(),
-        minute: triggerTime.getMinutes(),
-        repeats: true,
-      },
+      trigger: {repeats: true, hour: 20, minute: 12, channelId: 'new-emails'},
     })
-      .then(notifyId => {
+      .then(async notifyId => {
         console.log('ahs', notifyId);
-        AsyncStorage.setItem('notifyId', notifyId);
+        setNotifyId(notifyId);
+        const newNotification = {
+          id1: notifyId ? notifyId : ' ',
+          title,
+          date: date.toLocaleString(),
+        };
+        setNotifications([...notifications, newNotification]);
+        setTitle('');
+        setDate(new Date());
+        try {
+          console.log(user_id);
+
+          const response = await axios.post(
+            `${BASE_URL}/users/${user_id}/medicine.json`,
+            newNotification,
+          );
+          newNotification.id = response.data.name;
+        } catch (error) {
+          console.error(
+            'Błąd podczas zapisywania powiadomień w Firebase:',
+            error,
+          );
+        }
       })
       .catch(err => console.error('bladf', err));
 
-    setNotificationId(id);
-
-    AsyncStorage.setItem('notificationTime', `${hour}:${minute}`);
-    return id;
+    setVisible(false);
   };
 
-  const handleTimeChange = async (event, selectedTime) => {
-    const currentTime = selectedTime || pickerTime;
-    console.log(selectedTime, pickerTime);
-    setPickerTime(currentTime);
-    if (currentTime) {
-      const timeString = currentTime.toLocaleTimeString().slice(0, 5);
-      setNotificationTime(timeString);
-      if (wantsNotification) {
-        //await handleNotificationUpdate(timeString);
-      }
-    }
-  };
-
-  const handleNotificationUpdate = async timeString => {
+  const removeMedicine = async id => {
     try {
-      const id = AsyncStorage.getItem('notifyId');
-      if (id) {
-        await Notifications.cancelScheduledNotificationAsync(id);
+      const notificationToDelete = notifications2.find(
+        notification => notification.id === id,
+      );
+      if (!notificationToDelete) return;
+
+      console.log(notificationToDelete);
+
+      const scheduledId = notificationToDelete.id1;
+      console.log(scheduledId);
+      if (scheduledId) {
+        await Notifications.cancelScheduledNotificationAsync(scheduledId);
       }
-      const [hour, minute] = timeString.split(':');
-      await scheduleDailyNotification(Number(hour), Number(minute))
-        .then(notifyId => {
-          console.log('ahs', notifyId);
-          AsyncStorage.setItem('notifyId', notifyId);
-        })
-        .catch(err => console.error('bladf', err));
-      // await setNotificationId(newNotificationId);
-      AsyncStorage.setItem('notificationTime', timeString);
-    } catch (e) {
-      console.error(e);
+      await axios.delete(`${BASE_URL}/users/${user_id}/medicine/${id}.json`);
+      setNotifications2(prevNotifications =>
+        prevNotifications.filter(notification => notification.id !== id),
+      );
+    } catch (error) {
+      console.error('Błąd podczas usuwania powiadomienia:', error);
     }
   };
 
-  const handleTookMedicineChange = value => {
-    setTookMedicine(value);
-    AsyncStorage.setItem('tookMedicine', JSON.stringify(value));
+  const handleDateChange = (event, selectedDate) => {
+    setDate(selectedDate || date);
   };
+
+  const handleToggleMedication = async id => {
+    const updatedMedications = notifications2.map(med => {
+      if (med.id === id) {
+        return {...med, taken: !med.taken};
+      }
+      return med;
+    });
+    console.log(updatedMedications);
+    setNotifications2(updatedMedications);
+    await AsyncStorage.setItem(
+      'medications',
+      JSON.stringify(updatedMedications),
+    );
+  };
+
+  const renderItem = ({item}) => (
+    <View style={{paddingVertical: 5}}>
+      <Surface style={styles.surface} elevation={4}>
+        <Text
+          style={{
+            fontSize: 16,
+            fontWeight: 'bold',
+            marginBottom: 5,
+            marginHorizontal: 10,
+          }}>
+          {item.title}
+        </Text>
+        <Text>{item.date}</Text>
+        <Text style={styles.text}>Odznacz wzięcie leków:</Text>
+        <Switch
+          value={item.taken}
+          onValueChange={() => handleToggleMedication(item.id)}
+        />
+        <Button
+          title="Usuń"
+          onPress={async () => await removeMedicine(item.id)}
+          color="red"
+        />
+      </Surface>
+    </View>
+  );
+
   return (
     <PaperProvider>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -139,7 +208,66 @@ export default function MedicineScreen({navigation}) {
           source={require('../assets/Leki.png')}
           style={styles.rootContainer}>
           <View style={styles.overlay} />
-          <View style={styles.buttonContainer}>
+          <ActionButton onPress={showModal} />
+          <Portal>
+            <Dialog
+              visible={visible}
+              onDismiss={hideModal}
+              style={{
+                borderRadius: 10,
+
+                justifyContent: 'center',
+                alignContent: 'center',
+              }}>
+              <TouchableWithoutFeedback
+                onPress={Keyboard.dismiss}
+                accessible={false}>
+                <View>
+                  <Dialog.Content>
+                    <TextInput
+                      mode="outlined"
+                      outlineColor="#8a66af"
+                      activeOutlineColor="#8a66af"
+                      label="Lek"
+                      value={title}
+                      onChangeText={text => setTitle(text)}
+                      style={styles.text}
+                    />
+                    <DateTimePicker
+                      value={date}
+                      mode="datetime"
+                      display="default"
+                      onChange={handleDateChange}
+                      style={styles.czasdata}
+                    />
+                  </Dialog.Content>
+                  <Dialog.Actions>
+                    <Button
+                      title="Dodaj"
+                      onPress={async () => await addMedicine()}
+                      style={styles.button}
+                      color="pink"
+                    />
+                    <Button
+                      title="Zamknij"
+                      onPress={hideModal}
+                      style={styles.button}
+                      color="pink"
+                    />
+                  </Dialog.Actions>
+                </View>
+              </TouchableWithoutFeedback>
+            </Dialog>
+          </Portal>
+          <Portal.Host>
+            <FlatList
+              data={notifications2}
+              renderItem={renderItem}
+              keyExtractor={item => item.id}
+              style={{marginTop: 20}}
+            />
+          </Portal.Host>
+          {/* <View style={styles.buttonContainer}>
             <Text style={styles.text}>Odznacz wzięcie leków:</Text>
             <Switch
               value={tookMedicine}
@@ -168,77 +296,69 @@ export default function MedicineScreen({navigation}) {
                 />
               </View>
             )}
-          </View>
+          </View> */}
         </ImageBackground>
       </TouchableWithoutFeedback>
     </PaperProvider>
   );
 }
-
-const commonShadow = {
-  elevation: 5,
-  shadowColor: 'black',
-  shadowOffset: {width: 0, height: 4},
-  shadowOpacity: 0.2,
-};
-
 const styles = StyleSheet.create({
   rootContainer: {
     flex: 1,
     padding: 20,
-    justifyContent: 'flex-start',
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
-
-    alignItems: 'center',
-    ...commonShadow,
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  headerContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    marginTop: 20,
     justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-    alignSelf: 'stretch',
-  },
-  buttonContainer: {
-    marginTop: 100,
-    marginHorizontal: 20,
-  },
-  checkbox: {
-    alignSelf: 'center',
-    marginVertical: 10,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
   },
   button: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: 150,
-    height: 100,
-    padding: 10,
+    borderBottomWidth: 1,
+    marginBottom: 10,
+    marginTop: 15,
+    borderWidth: 2,
+    borderColor: 'blue',
+    backgroundColor: 'blue',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 5,
+    color: 'black',
+  },
+  buttonText: {
+    color: 'black',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  czasdata: {
+    alignContent: 'center',
+    justifyContent: 'center',
+    width: 260,
+    marginTop: 20,
+    paddingRight: 50,
+  },
+  delete: {},
+  surface: {
+    padding: 6,
+    marginRight: 10,
+    marginLeft: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: 10,
-    backgroundColor: '#afeeee',
-    ...commonShadow,
+    shadowOffset: {width: 0, height: 4},
+    height: 150,
+  },
+  shadow: {
+    shadowOpacity: 0.35,
+    shadowRadius: 5,
+    shadowColor: '#000000',
+    shadowOffset: {height: 4, width: 0},
+    elevation: 5,
   },
   text: {
+    marginTop: 15,
     fontSize: 16,
-    fontWeight: 'bold',
-    lineHeight: 21,
-    letterSpacing: 0.25,
-    color: 'black',
-    marginVertical: 10,
+  },
+  picker: {
+    height: 200,
+    fontSize: 10,
   },
 });

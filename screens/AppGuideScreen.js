@@ -20,50 +20,93 @@ import {useFocusEffect} from '@react-navigation/native';
 import {Picker} from '@react-native-picker/picker';
 import Checkbox from 'expo-checkbox';
 import {ActionButton} from '../components/ui/ActionButton';
+import Swiper from 'react-native-swiper';
 
 export default function AppGuideScreen({navigation}) {
-  const [description2, setDescription2] = useState('');
-  const [dialogVisible2, setDialogVisible2] = useState(false);
-  const showDialog2 = () => setDialogVisible2(true);
-
-  const hideDialog2 = () => setDialogVisible2(false);
-  useEffect(() => {
-    console.log(description2);
-  }, [description2]);
   return (
-    <PaperProvider>
-      <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-        <Text>Profile Screen</Text>
-        <ActionButton onPress={showDialog2} />
-        <Portal>
-          <Dialog
-            visible={dialogVisible2}
-            style={{borderRadius: 10, width: 300}}
-            onDismiss={hideDialog2}>
-            <Dialog.Title>Dodaj nowe zalecenia: </Dialog.Title>
-            <Dialog.Content>
-              <Text>Zalecenia: </Text>
-
-              <TextInput
-                multiline
-                mode="outlined"
-                outlineColor="#8a66af"
-                activeOutlineColor="#8a66af"
-                label="Opis"
-                value={description2}
-                onChangeText={text => setDescription2(text)}
-              />
-            </Dialog.Content>
-            <Dialog.Actions>
-              <Button
-                title="Zamknij"
-                onPress={() => setDialogVisible2(false)}
-                color="black"
-              />
-            </Dialog.Actions>
-          </Dialog>
-        </Portal>
-      </View>
-    </PaperProvider>
+    <View style={{paddingVertical: 5}}>
+      <Surface style={styles.surface} elevation={4}>
+        <View style={{flex: 1, flexDirection: 'row'}}>
+          <Text
+            style={{
+              fontSize: 16,
+              fontWeight: 'bold',
+              marginBottom: 5,
+              marginHorizontal: 10,
+            }}>
+            Dieta
+          </Text>
+        </View>
+      </Surface>
+    </View>
   );
 }
+const styles = StyleSheet.create({
+  wrapper: {},
+  slide1: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#9DD6EB',
+  },
+  slide2: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#97CAE5',
+  },
+  slide3: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#92BBD9',
+  },
+  text: {
+    color: '#fff',
+    fontSize: 30,
+    fontWeight: 'bold',
+  },
+  absolute: {
+    height: 100,
+  },
+  container: {
+    flex: 1,
+  },
+  calendarWrapper: {},
+  items: {},
+  dayPressColor: {
+    backgroundColor: '#000000',
+  },
+  itemContainer: {
+    backgroundColor: 'white',
+    margin: 5,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
+  },
+  surface: {
+    padding: 40,
+    marginRight: 10,
+    marginLeft: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 10,
+    //shadowOffset: { width: 0, height: 4 },
+    height: 130,
+    marginTop: 10,
+    backgroundColor: '#afeeee',
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: '400',
+    textAlign: 'center',
+    marginBottom: 10,
+    marginTop: 10,
+  },
+  emptyDate: {
+    height: 15,
+    flex: 1,
+    paddingTop: 30,
+  },
+});

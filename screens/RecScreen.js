@@ -1,31 +1,31 @@
 import React, {useState, useEffect, useContext} from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  ImageBackground,
-  Button,
-  Platform,
-  Pressable,
-} from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import * as Notifications from 'expo-notifications';
+import {View, Text, FlatList, ImageBackground, Button} from 'react-native';
 import {StyleSheet} from 'react-native';
 import {Portal, PaperProvider, Dialog, Surface} from 'react-native-paper';
-import {TextInput} from 'react-native-paper';
 import axios from 'axios';
 import {AuthContext} from '../store/auth-context';
 import {Buffer} from 'buffer';
 import {useFocusEffect} from '@react-navigation/native';
-import {Picker} from '@react-native-picker/picker';
-import Checkbox from 'expo-checkbox';
 import {ActionButton} from '../components/ui/ActionButton';
 
 const BASE_URL = 'https://logow-576ee-default-rtdb.firebaseio.com/';
 
 export default function RecScreen({navigation}) {
   const [recommendations, setRecommendations] = useState([]);
+  const [recommendations2, setRecommendations2] = useState([]);
   const [user_id, setUserId] = useState('');
+  const [isDialogVisible, setIsDialogVisible] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  const showDialog = item => {
+    setSelectedItem(item);
+    setIsDialogVisible(true);
+  };
+
+  const hideDialog = () => {
+    setIsDialogVisible(false);
+    setSelectedItem(null);
+  };
 
   const authCtx = useContext(AuthContext);
   const token = authCtx.token;
@@ -64,8 +64,7 @@ export default function RecScreen({navigation}) {
                 id: key,
               });
             }
-            console.log('hej');
-            setRecommendations(loadedRecommendations);
+            setRecommendations2(loadedRecommendations);
             console.log(recommendations);
           })
           .catch(err => console.error('bladf', err));
@@ -79,7 +78,7 @@ export default function RecScreen({navigation}) {
 
     loadRecommendations();
     console.log(user_id);
-  }, [user_id]);
+  }, [user_id, recommendations]);
 
   // const loadRecommendations = async () => {
   //   try {
@@ -104,7 +103,7 @@ export default function RecScreen({navigation}) {
   // };
   const removeRecommendation = async id => {
     try {
-      const recommendationToDelete = recommendations.find(
+      const recommendationToDelete = recommendations2.find(
         recommendation => recommendation.id === id,
       );
 
@@ -133,6 +132,11 @@ export default function RecScreen({navigation}) {
         </Text>
         <Text>{item.date}</Text>
         <Button
+          title="Zobacz zalecenia"
+          onPress={() => showDialog(item)}
+          color="black"
+        />
+        <Button
           title="Usuń"
           onPress={() => removeRecommendation(item.id)}
           color="red"
@@ -149,12 +153,26 @@ export default function RecScreen({navigation}) {
         <ActionButton onPress={() => navigation.navigate('AddRec')} />
         <Portal.Host>
           <FlatList
-            data={recommendations}
+            data={recommendations2}
             renderItem={renderItem}
             keyExtractor={item => item.id}
             style={{marginTop: 20}}
           />
         </Portal.Host>
+        <Portal>
+          <Dialog
+            visible={isDialogVisible}
+            onDismiss={hideDialog}
+            style={{borderRadius: 10}}>
+            <Dialog.Title>Zalecenia:</Dialog.Title>
+            <Dialog.Content>
+              <Text>{selectedItem?.description}</Text>
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button onPress={hideDialog} title="Zamknij" color="black" />
+            </Dialog.Actions>
+          </Dialog>
+        </Portal>
       </ImageBackground>
     </PaperProvider>
   );

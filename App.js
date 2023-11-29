@@ -94,7 +94,7 @@ function AuthenticatedStack() {
               component={RecScreen}
               options={{
                 headerBackTitle: null,
-                title: 'Dodaj zalecenia',
+                title: 'Zalecenia',
                 headerStyle: {
                   height: 150,
                 },

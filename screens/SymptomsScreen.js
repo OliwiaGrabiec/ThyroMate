@@ -1,5 +1,13 @@
 import * as React from 'react';
-import {View, StyleSheet, Text, Button, TouchableOpacity} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  Button,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from 'react-native';
 import {Agenda} from 'react-native-calendars';
 import {useEffect, useState, useContext} from 'react';
 import {addDays, format, parseISO} from 'date-fns';
@@ -49,6 +57,7 @@ export default function SymptomsScreen({navigation}) {
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(new Date());
   const [symptoms, setSymptoms] = useState([]);
+  const [symptoms2, setSymptoms2] = useState([]);
   const [user_id, setUserId] = useState('');
   const [items, setItems] = useState({});
 
@@ -107,14 +116,14 @@ export default function SymptomsScreen({navigation}) {
               });
             }
             setItems({...symptomsForAgenda});
-            setSymptoms(loadedSymptoms);
+            setSymptoms2(loadedSymptoms);
           });
       } catch (error) {
         console.error('Błąd podczas wczytywania objawów z Firebase:', error);
       }
     };
     loadSymptomsForDay();
-  }, [user_id, date]);
+  }, [user_id, date, symptoms]);
 
   const onDayPress = day => {
     setDate(new Date(day.timestamp));
@@ -164,6 +173,7 @@ export default function SymptomsScreen({navigation}) {
   // };
 
   const containerStyle = {backgroundColor: 'white', padding: 20};
+
   const addSymptoms = async () => {
     const identifier = new Date().getTime().toString();
     const newSymptom = {
@@ -192,28 +202,33 @@ export default function SymptomsScreen({navigation}) {
 
   const removeSymptoms = async id => {
     try {
-      const symptomToDeleteIndex = symptoms.findIndex(
+      console.log(symptoms2);
+      const symptomToDeleteIndex = symptoms2.findIndex(
         symptom => symptom.id === id,
       );
+      console.log(symptomToDeleteIndex);
       if (symptomToDeleteIndex !== -1) {
-        const symptomToDelete = symptoms[symptomToDeleteIndex];
+        const symptomToDelete = symptoms2[symptomToDeleteIndex];
         const formattedSymptomDate = parseAndFormatDate(symptomToDelete.date);
         console.log(`Deleting symptom from date: ${formattedSymptomDate}`);
 
         await axios.delete(`${BASE_URL}/users/${user_id}/symptoms/${id}.json`);
 
-        setSymptoms(currentSymptoms =>
+        setSymptoms2(currentSymptoms =>
           currentSymptoms.filter(symptom => symptom.id !== id),
         );
 
         setItems(currentItems => {
           const updatedItems = {...currentItems};
-          updatedItems[formattedSymptomDate] = updatedItems[
-            formattedSymptomDate
-          ].filter(symptom => symptom.id !== id);
 
-          if (updatedItems[formattedSymptomDate].length === 0) {
-            delete updatedItems[formattedSymptomDate];
+          if (updatedItems[formattedSymptomDate]) {
+            updatedItems[formattedSymptomDate] = updatedItems[
+              formattedSymptomDate
+            ].filter(symptom => symptom.id !== id);
+
+            if (updatedItems[formattedSymptomDate].length === 0) {
+              delete updatedItems[formattedSymptomDate];
+            }
           }
 
           return updatedItems;
@@ -247,20 +262,20 @@ export default function SymptomsScreen({navigation}) {
   const renderItem = item => (
     <View style={{paddingVertical: 5}}>
       <Surface style={styles.surface} elevation={4}>
-        <View style={{flex: 1, flexDirection: 'row'}}>
-          <View style={{flex: 1, flexDirection: 'column'}}>
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: 'bold',
-                marginBottom: 5,
-                marginHorizontal: 10,
-              }}>
-              {item.title}
-            </Text>
-            <Text>{item.description}</Text>
-          </View>
-          {/* <View
+        {/* <View style={{flex: 1, flexDirection: 'row'}}> */}
+        {/* <View style={{flexDirection: 'column'}}> */}
+        <Text
+          style={{
+            fontSize: 16,
+            fontWeight: 'bold',
+            marginBottom: 5,
+            marginHorizontal: 10,
+          }}>
+          {item.title}
+        </Text>
+        <Text>{item.description}</Text>
+        {/* </View> */}
+        {/* <View
             style={{
               //padding: 10,
               width: 80,
@@ -274,7 +289,7 @@ export default function SymptomsScreen({navigation}) {
             }}>
             <Text>{item.rate}</Text>
           </View> */}
-        </View>
+        {/* </View> */}
         <Button
           title="Usuń"
           onPress={() => removeSymptoms(item.id)}
@@ -324,98 +339,75 @@ export default function SymptomsScreen({navigation}) {
             visible={visible}
             onDismiss={hideModal}
             contentContainerStyle={containerStyle}>
-            <TextInput
-              mode="outlined"
-              outlineColor="#8a66af"
-              activeOutlineColor="#8a66af"
-              label="Symptom"
-              value={title}
-              onChangeText={text => setTitle(text)}
-              style={styles.text}
-            />
-            <Text style={styles.text}>Zaznacz stopień nasilenia: </Text>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-around',
-                padding: 10,
-              }}>
-              {['niski', 'średni', 'wysoki'].map(level => (
-                <TouchableOpacity
-                  key={level}
+            <TouchableWithoutFeedback
+              onPress={Keyboard.dismiss}
+              accessible={false}>
+              <View>
+                <TextInput
+                  mode="outlined"
+                  outlineColor="#8a66af"
+                  activeOutlineColor="#8a66af"
+                  label="Symptom"
+                  value={title}
+                  onChangeText={text => setTitle(text)}
+                  style={styles.text}
+                />
+                <Text style={styles.text}>Zaznacz stopień nasilenia: </Text>
+                <View
                   style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-around',
                     padding: 10,
-                    width: 80,
-                    height: 40,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    borderRadius: 20,
-                    backgroundColor:
-                      rate === level ? levelStyles[level] : defaultColor,
-                  }}
-                  onPress={() => setRate(level)}>
-                  <Text style={{color: 'white'}}>{level.toUpperCase()}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-            <TextInput
-              mode="outlined"
-              outlineColor="#8a66af"
-              activeOutlineColor="#8a66af"
-              label="Opis"
-              value={description}
-              onChangeText={text => setDescription(text)}
-              style={styles.text}
-            />
-            <Button
-              title="Dodaj"
-              onPress={addSymptoms}
-              style={styles.button}
-              color="pink"
-            />
-            <Button
-              title="Zamknij"
-              onPress={hideModal}
-              style={styles.button}
-              color="pink"
-            />
+                  }}>
+                  {['niski', 'średni', 'wysoki'].map(level => (
+                    <TouchableOpacity
+                      key={level}
+                      style={{
+                        padding: 10,
+                        width: 80,
+                        height: 40,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        borderRadius: 20,
+                        backgroundColor:
+                          rate === level ? levelStyles[level] : defaultColor,
+                      }}
+                      onPress={() => setRate(level)}>
+                      <Text style={{color: 'white'}}>
+                        {level.toUpperCase()}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <TextInput
+                  mode="outlined"
+                  outlineColor="#8a66af"
+                  activeOutlineColor="#8a66af"
+                  label="Opis"
+                  value={description}
+                  onChangeText={text => setDescription(text)}
+                  style={styles.text}
+                />
+                <Button
+                  title="Dodaj"
+                  onPress={addSymptoms}
+                  style={styles.button}
+                  color="pink"
+                />
+                <Button
+                  title="Zamknij"
+                  onPress={hideModal}
+                  style={styles.button}
+                  color="pink"
+                />
+              </View>
+            </TouchableWithoutFeedback>
           </Modal>
         </Portal>
       </View>
     </PaperProvider>
   );
 }
-// function SymptomItem1({item1, onRemove}) {
-//   return (
-//     <View style={{paddingVertical: 5}}>
-//       <Surface style={styles.surface} elevation={4}>
-//         <View>
-//           <View style={{}}>
-//             <Text style={{fontSize: 16, fontWeight: 'bold', marginBottom: 5}}>
-//               {item1.title || ''}
-//             </Text>
-//             <Text>{item1.description || ''}</Text>
-//           </View>
-//           <View
-//             style={{
-//               width: 80,
-//               height: 40,
-//               marginLeft: 200,
-//               marginBottom: 10,
-//               justifyContent: 'center',
-//               alignItems: 'center',
-//               borderRadius: 30,
-//               //backgroundColor: levelStyles[item1.rate] ?? defaultColor,
-//             }}>
-//             <Text>{item1.rate}</Text>
-//           </View>
-//         </View>
-//         <Button title="Usuń" onPress={() => onRemove(item1.id)} color="red" />
-//       </Surface>
-//     </View>
-//   );
-// }
-// const SymptomItem = memo(SymptomItem1);
 
 const styles = StyleSheet.create({
   absolute: {

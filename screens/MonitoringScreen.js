@@ -7,6 +7,8 @@ import {
   ImageBackground,
   Alert,
   Pressable,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import {StyleSheet} from 'react-native';
 import {Portal, PaperProvider, Dialog, Surface} from 'react-native-paper';
@@ -81,25 +83,25 @@ export default function MonitoringScreen({navigation}) {
       }
     };
     loadTests();
-  }, [user_id]);
+  }, [user_id, tests]);
 
-  const loadTests = async () => {
-    try {
-      const response = await axios.get(
-        `${BASE_URL}/users/${user_id}/tests.json`,
-      );
-      const loadedTests = [];
-      for (const key in response.data) {
-        loadedTests.push({
-          ...response.data[key],
-          id: key,
-        });
-      }
-      setTests2(loadedTests);
-    } catch (error) {
-      console.error('Błąd podczas wczytywania powiadomień z Firebase:', error);
-    }
-  };
+  // const loadTests = async () => {
+  //   try {
+  //     const response = await axios.get(
+  //       `${BASE_URL}/users/${user_id}/tests.json`,
+  //     );
+  //     const loadedTests = [];
+  //     for (const key in response.data) {
+  //       loadedTests.push({
+  //         ...response.data[key],
+  //         id: key,
+  //       });
+  //     }
+  //     setTests2(loadedTests);
+  //   } catch (error) {
+  //     console.error('Błąd podczas wczytywania powiadomień z Firebase:', error);
+  //   }
+  // };
 
   const addTests = async () => {
     if (!title.trim()) {
@@ -156,54 +158,62 @@ export default function MonitoringScreen({navigation}) {
   );
   return (
     <PaperProvider>
-      <ImageBackground
-        source={require('../assets/Monitoring.png')}
-        style={styles.rootContainer}>
-        <View style={styles.overlay} />
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <ImageBackground
+          source={require('../assets/Monitoring.png')}
+          style={styles.rootContainer}>
+          <View style={styles.overlay} />
 
-        <ActionButton onPress={showDialog} />
-        <Portal>
-          <Dialog
-            visible={dialogVisible}
-            style={{borderRadius: 10}}
-            onDismiss={hideDialog}>
-            <Dialog.Title>Dodaj nowe wyniki badań: </Dialog.Title>
-            <Dialog.Content>
-              <TextInput
-                mode="outlined"
-                outlineColor="#8a66af"
-                activeOutlineColor="#8a66af"
-                label="Tytuł"
-                value={title}
-                onChangeText={text => setTitle(text)}
-                style={styles.text}
-              />
-            </Dialog.Content>
-            <Dialog.Actions>
-              <Button
-                title="Dodaj"
-                onPress={addTests}
-                style={styles.button}
-                color="black"
-              />
-              <Button
-                title="Zamknij"
-                onPress={() => setDialogVisible(false)}
-                style={styles.button}
-                color="black"
-              />
-            </Dialog.Actions>
-          </Dialog>
-        </Portal>
-        <Portal.Host>
-          <FlatList
-            data={tests2}
-            renderItem={renderItem}
-            keyExtractor={item => item.id}
-            style={{marginTop: 20}}
-          />
-        </Portal.Host>
-      </ImageBackground>
+          <ActionButton onPress={showDialog} />
+          <Portal>
+            <Dialog
+              visible={dialogVisible}
+              style={{borderRadius: 10}}
+              onDismiss={hideDialog}>
+              <TouchableWithoutFeedback
+                onPress={Keyboard.dismiss}
+                accessible={false}>
+                <View>
+                  <Dialog.Title>Dodaj nowe wyniki badań: </Dialog.Title>
+                  <Dialog.Content>
+                    <TextInput
+                      mode="outlined"
+                      outlineColor="#8a66af"
+                      activeOutlineColor="#8a66af"
+                      label="Tytuł"
+                      value={title}
+                      onChangeText={text => setTitle(text)}
+                      style={styles.text}
+                    />
+                  </Dialog.Content>
+                  <Dialog.Actions>
+                    <Button
+                      title="Dodaj"
+                      onPress={addTests}
+                      style={styles.button}
+                      color="black"
+                    />
+                    <Button
+                      title="Zamknij"
+                      onPress={() => setDialogVisible(false)}
+                      style={styles.button}
+                      color="black"
+                    />
+                  </Dialog.Actions>
+                </View>
+              </TouchableWithoutFeedback>
+            </Dialog>
+          </Portal>
+          <Portal.Host>
+            <FlatList
+              data={tests2}
+              renderItem={renderItem}
+              keyExtractor={item => item.id}
+              style={{marginTop: 20}}
+            />
+          </Portal.Host>
+        </ImageBackground>
+      </TouchableWithoutFeedback>
     </PaperProvider>
   );
 }

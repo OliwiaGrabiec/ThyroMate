@@ -5,12 +5,12 @@ import {
   FlatList,
   ImageBackground,
   Button,
-  Platform,
-  Pressable,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Notifications from 'expo-notifications';
-import {StyleSheet, Modal} from 'react-native';
+import {StyleSheet} from 'react-native';
 import {Portal, PaperProvider, Dialog, Surface} from 'react-native-paper';
 import {TextInput} from 'react-native-paper';
 import axios from 'axios';
@@ -26,6 +26,7 @@ const BASE_URL = 'https://logow-576ee-default-rtdb.firebaseio.com/';
 
 export default function NotificationsScreen({navigation}) {
   const [notifications, setNotifications] = useState([]);
+  const [notifications2, setNotifications2] = useState([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(new Date());
@@ -78,8 +79,9 @@ export default function NotificationsScreen({navigation}) {
                 id: key,
               });
             }
-            console.log('hej');
-            setNotifications(loadedNotifications);
+
+            setNotifications2(loadedNotifications);
+            console.log(notifications2);
           })
           .catch(err => console.error('bladf', err));
       } catch (error) {
@@ -89,27 +91,10 @@ export default function NotificationsScreen({navigation}) {
         );
       }
     };
-
     loadNotifications();
     console.log(user_id);
-  }, [user_id]);
-  // const loadNotifications = async () => {
-  //   try {
-  //     const response = await axios.get(
-  //       `${BASE_URL}/users/${user_id}/notifications.json`,
-  //     );
-  //     const loadedNotifications = [];
-  //     for (const key in response.data) {
-  //       loadedNotifications.push({
-  //         ...response.data[key],
-  //         id: key,
-  //       });
-  //     }
-  //     setNotifications(loadedNotifications);
-  //   } catch (error) {
-  //     console.error('Błąd podczas wczytywania powiadomień z Firebase:', error);
-  //   }
-  // };
+  }, [user_id, notifications]);
+
   const scheduleNotification = async () => {
     const notificationTime = new Date(date);
     if (reminderTime !== '0') {
@@ -117,15 +102,19 @@ export default function NotificationsScreen({navigation}) {
         notificationTime.getHours() - parseInt(reminderTime, 10),
       );
     }
-    const triggerTime = notificationTime.getTime() - new Date().getTime();
-    const identifier = new Date().getTime().toString();
-    const trigger = date.getTime() - new Date().getTime();
+    // const triggerTime = notificationTime.getTime() - new Date().getTime();
+    // const identifier = new Date().getTime().toString();
+    // const trigger = date.getTime() - new Date().getTime();
 
     if (isReminderSet) {
       await Notifications.scheduleNotificationAsync({
-        content: {title: title, body: description},
-        trigger: {seconds: 10},
-        //{seconds: triggerTime / 1000},
+        content: {
+          title: title,
+          body: description,
+          sound: 'notifications-sound-127856.wav',
+        },
+        trigger: {seconds: 10, channelId: 'new-emails'},
+        //{seconds: triggerTime / 1000, channelId: 'new-emails'},
       })
         .then(async notifyId => {
           console.log('ahs', notifyId);
@@ -136,7 +125,6 @@ export default function NotificationsScreen({navigation}) {
             title,
             description,
             date: date.toLocaleString(),
-            trigger: trigger,
           };
           setNotifications([...notifications, newNotification]);
           setTitle('');
@@ -158,6 +146,31 @@ export default function NotificationsScreen({navigation}) {
           }
         })
         .catch(err => console.error('bladf', err));
+    } else {
+      const newNotification = {
+        id1: notifyId ? notifyId : ' ',
+        title,
+        description,
+        date: date.toLocaleString(),
+      };
+      setNotifications([...notifications, newNotification]);
+      setTitle('');
+      setDescription('');
+      setDate(new Date());
+      try {
+        console.log(user_id);
+
+        const response = await axios.post(
+          `${BASE_URL}/users/${user_id}/notifications.json`,
+          newNotification,
+        );
+        newNotification.id = response.data.name;
+      } catch (error) {
+        console.error(
+          'Błąd podczas zapisywania powiadomień w Firebase:',
+          error,
+        );
+      }
     }
 
     setDialogVisible(false);
@@ -165,7 +178,7 @@ export default function NotificationsScreen({navigation}) {
 
   const removeNotification = async id => {
     try {
-      const notificationToDelete = notifications.find(
+      const notificationToDelete = notifications2.find(
         notification => notification.id === id,
       );
       if (!notificationToDelete) return;
@@ -180,7 +193,7 @@ export default function NotificationsScreen({navigation}) {
       await axios.delete(
         `${BASE_URL}/users/${user_id}/notifications/${id}.json`,
       );
-      setNotifications(prevNotifications =>
+      setNotifications2(prevNotifications =>
         prevNotifications.filter(notification => notification.id !== id),
       );
     } catch (error) {
@@ -201,11 +214,6 @@ export default function NotificationsScreen({navigation}) {
         <Text>{item.description}</Text>
         <Text>{item.date}</Text>
         <Button
-          title="Usuń"
-          onPress={async () => await removeNotification(item.id)}
-          color="red"
-        />
-        <Button
           title="Dodaj zalecenia"
           onPress={() =>
             navigation.navigate('AddRec', {title: item.title, date: item.date})
@@ -213,100 +221,123 @@ export default function NotificationsScreen({navigation}) {
           style={styles.button}
           color="black"
         />
+        <Button
+          title="Usuń"
+          onPress={async () => await removeNotification(item.id)}
+          color="red"
+        />
       </Surface>
     </View>
   );
 
   return (
     <PaperProvider>
-      <ImageBackground
-        source={require('../assets/tlo.png')}
-        style={styles.rootContainer}>
-        <ActionButton onPress={showDialog} />
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <ImageBackground
+          source={require('../assets/tlo.png')}
+          style={styles.rootContainer}>
+          <ActionButton onPress={showDialog} />
 
-        <Portal>
-          <Dialog
-            visible={dialogVisible}
-            style={{borderRadius: 10}}
-            onDismiss={hideDialog}>
-            <Dialog.Title>Dodaj nową wizytę: </Dialog.Title>
-            <Dialog.Content>
-              <TextInput
-                mode="outlined"
-                outlineColor="#8a66af"
-                activeOutlineColor="#8a66af"
-                label="Tytuł"
-                value={title}
-                onChangeText={text => setTitle(text)}
-                style={styles.text}
-              />
-              <TextInput
-                mode="outlined"
-                outlineColor="#8a66af"
-                activeOutlineColor="#8a66af"
-                label="Opis"
-                value={description}
-                onChangeText={text => setDescription(text)}
-                style={styles.text}
-              />
-              <DateTimePicker
-                value={date}
-                mode="datetime"
-                display="default"
-                onChange={handleDateChange}
-                style={styles.czasdata}
-              />
-              <View style={{flexDirection: 'row'}}>
-                <Text style={styles.text}>Chcesz dostać powiadomienie?</Text>
-                <Checkbox
-                  value={isReminderSet}
-                  color={isReminderSet ? 'pink' : 'unchecked'}
-                  onValueChange={() => {
-                    setIsReminderSet(!isReminderSet);
-                  }}
-                  style={{marginLeft: 25, marginTop: 15}}
-                />
-              </View>
-              {isReminderSet && (
-                <Picker
-                  selectedValue={reminderTime}
-                  onValueChange={(itemValue, itemIndex) =>
-                    setReminderTime(itemValue)
-                  }
-                  style={styles.picker}>
-                  <Picker.Item label="W czasie wizyty" value="0" />
-                  <Picker.Item label="1 godzina przed" value="1" />
-                  <Picker.Item label="2 godziny przed" value="2" />
-                  <Picker.Item label="3 godziny przed" value="3" />
-                  <Picker.Item label="4 godziny przed" value="4" />
-                </Picker>
-              )}
-            </Dialog.Content>
-            <Dialog.Actions>
-              <Button
-                title="Dodaj"
-                onPress={async () => await scheduleNotification()}
-                style={styles.button}
-                color="black"
-              />
-              <Button
-                title="Zamknij"
-                onPress={() => setDialogVisible(false)}
-                style={styles.button}
-                color="black"
-              />
-            </Dialog.Actions>
-          </Dialog>
-        </Portal>
-        <Portal.Host>
-          <FlatList
-            data={notifications}
-            renderItem={renderItem}
-            keyExtractor={item => item.id}
-            style={{marginTop: 20}}
-          />
-        </Portal.Host>
-      </ImageBackground>
+          <Portal>
+            <Dialog
+              visible={dialogVisible}
+              style={{
+                borderRadius: 10,
+
+                justifyContent: 'center',
+                alignContent: 'center',
+              }}
+              onDismiss={hideDialog}>
+              <TouchableWithoutFeedback
+                onPress={Keyboard.dismiss}
+                accessible={false}>
+                <View>
+                  <Dialog.Title>Dodaj nową wizytę: </Dialog.Title>
+                  <Dialog.Content>
+                    <TextInput
+                      mode="outlined"
+                      outlineColor="#8a66af"
+                      activeOutlineColor="#8a66af"
+                      label="Tytuł"
+                      value={title}
+                      onChangeText={text => {
+                        console.log('Title updated:', text); // Add this line to check
+                        setTitle(text);
+                      }}
+                      style={styles.text}
+                    />
+                    <TextInput
+                      mode="outlined"
+                      outlineColor="#8a66af"
+                      activeOutlineColor="#8a66af"
+                      label="Opis"
+                      value={description}
+                      onChangeText={text => setDescription(text)}
+                      style={styles.text}
+                    />
+                    <DateTimePicker
+                      value={date}
+                      mode="datetime"
+                      display="default"
+                      onChange={handleDateChange}
+                      style={styles.czasdata}
+                    />
+                    <View style={{flexDirection: 'row'}}>
+                      <Text style={styles.text}>
+                        Chcesz dostać powiadomienie?
+                      </Text>
+                      <Checkbox
+                        value={isReminderSet}
+                        color={isReminderSet ? 'pink' : 'unchecked'}
+                        onValueChange={() => {
+                          setIsReminderSet(!isReminderSet);
+                        }}
+                        style={{marginLeft: 25, marginTop: 15}}
+                      />
+                    </View>
+                    {isReminderSet && (
+                      <Picker
+                        selectedValue={reminderTime}
+                        onValueChange={(itemValue, itemIndex) =>
+                          setReminderTime(itemValue)
+                        }
+                        style={styles.picker}>
+                        <Picker.Item label="W czasie wizyty" value="0" />
+                        <Picker.Item label="1 godzina przed" value="1" />
+                        <Picker.Item label="2 godziny przed" value="2" />
+                        <Picker.Item label="3 godziny przed" value="3" />
+                        <Picker.Item label="4 godziny przed" value="4" />
+                      </Picker>
+                    )}
+                  </Dialog.Content>
+                  <Dialog.Actions>
+                    <Button
+                      title="Dodaj"
+                      onPress={async () => await scheduleNotification()}
+                      style={styles.button}
+                      color="black"
+                    />
+                    <Button
+                      title="Zamknij"
+                      onPress={() => setDialogVisible(false)}
+                      style={styles.button}
+                      color="black"
+                    />
+                  </Dialog.Actions>
+                </View>
+              </TouchableWithoutFeedback>
+            </Dialog>
+          </Portal>
+          <Portal.Host>
+            <FlatList
+              data={notifications2}
+              renderItem={renderItem}
+              keyExtractor={item => item.id}
+              style={{marginTop: 20}}
+            />
+          </Portal.Host>
+        </ImageBackground>
+      </TouchableWithoutFeedback>
     </PaperProvider>
   );
 }
@@ -367,6 +398,6 @@ const styles = StyleSheet.create({
   },
   picker: {
     height: 200,
-    fontSize: 16,
+    fontSize: 10,
   },
 });
