@@ -102,9 +102,7 @@ export default function NotificationsScreen({navigation}) {
         notificationTime.getHours() - parseInt(reminderTime, 10),
       );
     }
-    // const triggerTime = notificationTime.getTime() - new Date().getTime();
-    // const identifier = new Date().getTime().toString();
-    // const trigger = date.getTime() - new Date().getTime();
+    const triggerTime = notificationTime.getTime() - new Date().getTime();
 
     if (isReminderSet) {
       await Notifications.scheduleNotificationAsync({
@@ -113,8 +111,7 @@ export default function NotificationsScreen({navigation}) {
           body: description,
           sound: 'notifications-sound-127856.wav',
         },
-        trigger: {seconds: 10, channelId: 'new-emails'},
-        //{seconds: triggerTime / 1000, channelId: 'new-emails'},
+        trigger: {seconds: triggerTime / 1000, channelId: 'new-emails'},
       })
         .then(async notifyId => {
           console.log('ahs', notifyId);

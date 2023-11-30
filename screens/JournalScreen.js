@@ -46,12 +46,10 @@ LocaleConfig.locales['pl'] = {
 LocaleConfig.defaultLocale = 'pl';
 
 const JournalScreen = () => {
-  //const [selectedMood, setSelectedMood] = useState(null);
   const [date, setDate] = useState(new Date());
   const [moodHistory, setMoodHistory] = useState({});
   const [moodHistory2, setMoodHistory2] = useState({});
   const [user_id, setUserId] = useState('');
-  //const [days, setDays] = useState([]);
   const [markedDates, setMarkedDates] = useState({});
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
 
@@ -76,13 +74,9 @@ const JournalScreen = () => {
   useFocusEffect(
     React.useCallback(() => {
       setUserId(getUserIdFromToken(token));
-      //  loadMoods();
     }, [user_id]),
   );
-  // useEffect(() => {
-  //   loadMoods();
-  //   console.log(moodHistory);
-  // }, [moodHistory]);
+
   useEffect(() => {
     const loadMoods = async () => {
       try {
@@ -121,11 +115,11 @@ const JournalScreen = () => {
     angry: 'zły',
   };
   const moods = {
-    happy: '#D0BBE6',
-    tired: '#D6BAF1',
-    excited: '#C59CEB',
-    sad: '#8A6DA5',
-    angry: '#634E76',
+    happy: '#DA70D6',
+    tired: '#BDB76B',
+    excited: '#FFA500',
+    sad: '#00BFFF',
+    angry: '#DC143C',
   };
   const moodIcons = {
     happy: 'smile',
@@ -176,32 +170,7 @@ const JournalScreen = () => {
       }
     }
   };
-  // const loadMoods = async () => {
-  //   try {
-  //     const response = await axios.get(
-  //       `${BASE_URL}/users/${user_id}/moods.json`,
-  //     );
-  //     const loadedMoods = (await response.data) || {};
 
-  //     const transformedMoods = {};
-  //     Object.entries(loadedMoods).forEach(([key, value]) => {
-  //       const dateKey = new Date(value.date).toISOString().split('T')[0];
-  //       transformedMoods[dateKey] = {...value, id: key};
-  //     });
-
-  //     setMoodHistory2(transformedMoods);
-  //     const newMarkedDates = {};
-  //     Object.entries(transformedMoods).forEach(([date, moodData]) => {
-  //       newMarkedDates[date] = {
-  //         marked: true,
-  //         dotColor: moods[moodData.mood],
-  //       };
-  //     });
-  //     setMarkedDates(newMarkedDates);
-  //   } catch (error) {
-  //     console.error('Error while loading mood data:', error);
-  //   }
-  // };
   const prepareChartData = (moods, selectedMonth) => {
     let moodCounts = {};
     Object.entries(moods).forEach(([date, moodData]) => {
@@ -214,19 +183,19 @@ const JournalScreen = () => {
       let moodColor;
       switch (mood) {
         case 'happy':
-          moodColor = '#D0BBE6';
+          moodColor = '#DA70D6';
           break;
         case 'tired':
-          moodColor = '#D6BAF1';
+          moodColor = '#BDB76B';
           break;
         case 'excited':
-          moodColor = '#C59CEB';
+          moodColor = '#FFA500';
           break;
         case 'sad':
-          moodColor = '#8A6DA5';
+          moodColor = '#00BFFF';
           break;
         case 'angry':
-          moodColor = '#634E76';
+          moodColor = '#DC143C';
           break;
         default:
           moodColor = 'grey'; // Fallback color
@@ -241,7 +210,6 @@ const JournalScreen = () => {
       };
     });
   };
-  const isMoodHistory2NotEmpty = Object.keys(moodHistory2).length > 0;
   const onDayPress = day => {
     const newDate = new Date(day.dateString);
     setSelectedMonth(newDate.getMonth());

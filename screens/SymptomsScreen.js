@@ -10,9 +10,9 @@ import {
 } from 'react-native';
 import {Agenda} from 'react-native-calendars';
 import {useEffect, useState, useContext} from 'react';
-import {addDays, format, parseISO} from 'date-fns';
+import {format} from 'date-fns';
 import {useFocusEffect} from '@react-navigation/native';
-import {Modal, Portal, Surface, PaperProvider} from 'react-native-paper';
+import {Modal, Portal, Dialog, PaperProvider} from 'react-native-paper';
 import {TextInput} from 'react-native-paper';
 import {Buffer} from 'buffer';
 import axios from 'axios';
@@ -137,42 +137,14 @@ export default function SymptomsScreen({navigation}) {
     const date = new Date(year, month - 1, day, hours, minutes, seconds);
     return format(date, 'yyyy-MM-dd');
   };
-  // const loadSymptomsForDay = async () => {
-  //   try {
-  //     const response = await axios.get(
-  //       `${BASE_URL}/users/${user_id}/symptoms.json`,
-  //     );
-  //     const symptomsForAgenda = {};
-  //     const loadedSymptoms = [];
-  //     for (const key in response.data) {
-  //       loadedSymptoms.push({
-  //         ...response.data[key],
-  //         id: key,
-  //       });
 
-  //       const symptom = response.data[key];
-  //       const formattedSymptomDate = parseAndFormatDate(symptom.date);
-
-  //       if (!symptomsForAgenda[formattedSymptomDate]) {
-  //         symptomsForAgenda[formattedSymptomDate] = [];
-  //       }
-
-  //       symptomsForAgenda[formattedSymptomDate].push({
-  //         //...symptom,
-  //         id: key,
-  //         title: symptom.title,
-  //         description: symptom.description,
-  //         rate: symptom.rate,
-  //       });
-  //     }
-  //     setItems({...symptomsForAgenda});
-  //     setSymptoms(loadedSymptoms);
-  //   } catch (error) {
-  //     console.error('Błąd podczas wczytywania objawów z Firebase:', error);
-  //   }
-  // };
-
-  const containerStyle = {backgroundColor: 'white', padding: 20};
+  const containerStyle = {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignContent: 'center',
+  };
 
   const addSymptoms = async () => {
     const identifier = new Date().getTime().toString();
@@ -239,69 +211,53 @@ export default function SymptomsScreen({navigation}) {
     }
   };
   const levelStyles = {
-    niski: 'lightblue',
-    średni: 'orange',
-    wysoki: 'red',
+    niski: '#afeeee',
+    średni: '#FFE4B5',
+    wysoki: '#FF6347',
   };
   const defaultColor = 'gray';
 
-  // const renderItem = item => {
-  //   // Add a console log to check the structure of the item
-  //   console.log(item);
-
-  //   // Check if the item is undefined before rendering the SymptomItem
-  //   if (!item) {
-  //     // You can return null or some placeholder to indicate there's an issue with the data
-  //     console.log(item);
-  //     console.warn('Undefined item encountered in renderItem');
-  //     return null;
-  //   }
-
-  //   return <SymptomItem item1={item} onRemove={removeSymptoms} />;
-  // };
   const renderItem = item => (
-    <View style={{paddingVertical: 5}}>
-      <Surface style={styles.surface} elevation={4}>
-        {/* <View style={{flex: 1, flexDirection: 'row'}}> */}
-        {/* <View style={{flexDirection: 'column'}}> */}
+    <View
+      style={{
+        padding: 10,
+        backgroundColor: '#e5e4e2',
+        borderRadius: 30,
+        marginTop: 10,
+        marginHorizontal: 10,
+      }}>
+      <View style={{marginHorizontal: 10, marginTop: 5}}>
         <Text
           style={{
             fontSize: 16,
             fontWeight: 'bold',
             marginBottom: 5,
-            marginHorizontal: 10,
           }}>
           {item.title}
         </Text>
         <Text>{item.description}</Text>
-        {/* </View> */}
-        {/* <View
-            style={{
-              //padding: 10,
-              width: 80,
-              height: 40,
-              marginLeft: 200,
-              marginBottom: 10,
-              justifyContent: 'center',
-              alignItems: 'center',
-              borderRadius: 30,
-              backgroundColor: levelStyles[item.rate] ?? defaultColor,
-            }}>
-            <Text>{item.rate}</Text>
-          </View> */}
-        {/* </View> */}
-        <Button
-          title="Usuń"
-          onPress={() => removeSymptoms(item.id)}
-          color="red"
-        />
-      </Surface>
+      </View>
+      <View
+        style={{
+          //padding: 10,
+          width: 70,
+          height: 30,
+          marginLeft: 200,
+          marginBottom: 10,
+          justifyContent: 'center',
+          alignItems: 'center',
+          borderRadius: 30,
+          backgroundColor: levelStyles[item.rate] ?? defaultColor,
+        }}>
+        <Text>{item.rate}</Text>
+      </View>
+      <Button
+        title="Usuń"
+        onPress={() => removeSymptoms(item.id)}
+        color="red"
+      />
     </View>
   );
-
-  // const rowHasChanged = (r1, r2) => {
-  //   return r1.name !== r2.name;
-  // };
 
   return (
     <PaperProvider>
@@ -323,19 +279,15 @@ export default function SymptomsScreen({navigation}) {
           }}
           selected={format(new Date(), 'yyyy-MM-dd')}
           theme={{
-            //agendaKnobColor: 'pink', // knob color
-            // backgroundColor: 'pink', // background color below agenda
-            agendaTodayColor: 'pink',
-            todayTextColor: 'pink',
-            //textSectionTitleColor: 'pink',
-            selectedDayBackgroundColor: 'pink', // calendar sel date
-            //dayTextColor: 'pink', // calendar day
-            dotColor: 'pink', // dots
+            agendaTodayColor: '#77d4d4',
+            todayTextColor: '#77d4d4',
+            selectedDayBackgroundColor: '#77d4d4',
+            dotColor: '#77d4d4',
           }}
           style={styles.calendarWrapper}
           scrollEnabled={true}></Agenda>
         <Portal>
-          <Modal
+          <Dialog
             visible={visible}
             onDismiss={hideModal}
             contentContainerStyle={containerStyle}>
@@ -343,66 +295,70 @@ export default function SymptomsScreen({navigation}) {
               onPress={Keyboard.dismiss}
               accessible={false}>
               <View>
-                <TextInput
-                  mode="outlined"
-                  outlineColor="#8a66af"
-                  activeOutlineColor="#8a66af"
-                  label="Symptom"
-                  value={title}
-                  onChangeText={text => setTitle(text)}
-                  style={styles.text}
-                />
-                <Text style={styles.text}>Zaznacz stopień nasilenia: </Text>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-around',
-                    padding: 10,
-                  }}>
-                  {['niski', 'średni', 'wysoki'].map(level => (
-                    <TouchableOpacity
-                      key={level}
-                      style={{
-                        padding: 10,
-                        width: 80,
-                        height: 40,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        borderRadius: 20,
-                        backgroundColor:
-                          rate === level ? levelStyles[level] : defaultColor,
-                      }}
-                      onPress={() => setRate(level)}>
-                      <Text style={{color: 'white'}}>
-                        {level.toUpperCase()}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-                <TextInput
-                  mode="outlined"
-                  outlineColor="#8a66af"
-                  activeOutlineColor="#8a66af"
-                  label="Opis"
-                  value={description}
-                  onChangeText={text => setDescription(text)}
-                  style={styles.text}
-                />
-                <Button
-                  title="Dodaj"
-                  onPress={addSymptoms}
-                  style={styles.button}
-                  color="pink"
-                />
-                <Button
-                  title="Zamknij"
-                  onPress={hideModal}
-                  style={styles.button}
-                  color="pink"
-                />
+                <Dialog.Content>
+                  <TextInput
+                    mode="outlined"
+                    outlineColor="#8a66af"
+                    activeOutlineColor="#8a66af"
+                    label="Symptom"
+                    value={title}
+                    onChangeText={text => setTitle(text)}
+                    style={styles.text}
+                  />
+                  <Text style={styles.text}>Zaznacz stopień nasilenia: </Text>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-around',
+                      padding: 10,
+                    }}>
+                    {['niski', 'średni', 'wysoki'].map(level => (
+                      <TouchableOpacity
+                        key={level}
+                        style={{
+                          padding: 10,
+                          width: 80,
+                          height: 40,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          borderRadius: 20,
+                          backgroundColor:
+                            rate === level ? levelStyles[level] : defaultColor,
+                        }}
+                        onPress={() => setRate(level)}>
+                        <Text style={{color: 'white'}}>
+                          {level.toUpperCase()}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                  <TextInput
+                    mode="outlined"
+                    outlineColor="#8a66af"
+                    activeOutlineColor="#8a66af"
+                    label="Opis"
+                    value={description}
+                    onChangeText={text => setDescription(text)}
+                    style={styles.text}
+                  />
+                </Dialog.Content>
+                <Dialog.Actions>
+                  <Button
+                    title="Dodaj"
+                    onPress={addSymptoms}
+                    style={styles.button}
+                    color="pink"
+                  />
+                  <Button
+                    title="Zamknij"
+                    onPress={hideModal}
+                    style={styles.button}
+                    color="pink"
+                  />
+                </Dialog.Actions>
               </View>
             </TouchableWithoutFeedback>
-          </Modal>
+          </Dialog>
         </Portal>
       </View>
     </PaperProvider>

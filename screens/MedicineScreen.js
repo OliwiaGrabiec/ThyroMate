@@ -32,7 +32,6 @@ export default function MedicineScreen({navigation}) {
   const [visible, setVisible] = useState(false);
   const [title, setTitle] = useState('');
   const [date, setDate] = useState(new Date());
-  const [tookMedicine, setTookMedicine] = useState(false);
   const [] = useRegisterNotifications();
   const [user_id, setUserId] = useState('');
   const [notifyId, setNotifyId] = useState('');
@@ -93,13 +92,21 @@ export default function MedicineScreen({navigation}) {
     console.log(user_id);
   }, [user_id, notifications]);
   const addMedicine = async () => {
+    const hourM = date.getHours();
+    const minuteM = date.getMinutes();
     await Notifications.scheduleNotificationAsync({
       content: {
         title: title,
+        body: 'Czas na leki!',
         date: date,
         sound: 'notifications-sound-127856.wav',
       },
-      trigger: {repeats: true, hour: 20, minute: 12, channelId: 'new-emails'},
+      trigger: {
+        repeats: true,
+        hour: hourM,
+        minute: minuteM,
+        channelId: 'new-emails',
+      },
     })
       .then(async notifyId => {
         console.log('ahs', notifyId);
@@ -175,14 +182,13 @@ export default function MedicineScreen({navigation}) {
   };
 
   const renderItem = ({item}) => (
-    <View style={{paddingVertical: 5}}>
+    <View style={{paddingVertical: 5, padding: 5}}>
       <Surface style={styles.surface} elevation={4}>
         <Text
           style={{
             fontSize: 16,
             fontWeight: 'bold',
-            marginBottom: 5,
-            marginHorizontal: 10,
+            marginTop: 10,
           }}>
           {item.title}
         </Text>
@@ -259,44 +265,16 @@ export default function MedicineScreen({navigation}) {
               </TouchableWithoutFeedback>
             </Dialog>
           </Portal>
-          <Portal.Host>
-            <FlatList
-              data={notifications2}
-              renderItem={renderItem}
-              keyExtractor={item => item.id}
-              style={{marginTop: 20}}
-            />
-          </Portal.Host>
-          {/* <View style={styles.buttonContainer}>
-            <Text style={styles.text}>Odznacz wzięcie leków:</Text>
-            <Switch
-              value={tookMedicine}
-              onValueChange={handleTookMedicineChange}
-              style={styles.checkbox}
-              color={tookMedicine ? 'blue' : undefined}
-            />
-            <Text style={styles.text}>
-              Czy chcesz codziennie dostawać powiadomienie o przyjmowaniu leków?
-            </Text>
-            <Switch
-              value={wantsNotification}
-              onValueChange={value => setWantsNotification(value)}
-              style={styles.checkbox}
-              color={wantsNotification ? 'blue' : undefined}
-            />
-            {wantsNotification && (
-              <View>
-                <Text style={styles.text}>Wybierz godzinę:</Text>
-                <DateTimePicker
-                  value={new Date()}
-                  mode="time"
-                  is24Hour={true}
-                  display="default"
-                  onChange={handleTimeChange}
-                />
-              </View>
-            )}
-          </View> */}
+
+          <Text style={{marginTop: 100, fontSize: 16, fontWeight: 500}}>
+            Dodaj codzienne przypomnienie o leku:
+          </Text>
+          <FlatList
+            data={notifications2}
+            renderItem={renderItem}
+            keyExtractor={item => item.id}
+            style={{marginTop: 20}}
+          />
         </ImageBackground>
       </TouchableWithoutFeedback>
     </PaperProvider>
@@ -354,8 +332,10 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   text: {
-    marginTop: 15,
-    fontSize: 16,
+    marginTop: 10,
+    marginBottom: 10,
+    fontSize: 14,
+    fontWeight: 500,
   },
   picker: {
     height: 200,
