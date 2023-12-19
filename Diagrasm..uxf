@@ -1,0 +1,88 @@
+<diagram program="umletino" version="15.1"><zoom_level>10</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>330</x><y>269</y><w>210</w><h>190</h></coordinates><panel_attributes>Appointment
+--
+id: string
+titile: string
+description: string
+datetime: date
+reminderTime: number
+isReminderSet: boolean
+--
+loadData(): void
+add(): void
+removeItem(itemId: string): void
+renderItem(): void
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>570</x><y>269</y><w>210</w><h>190</h></coordinates><panel_attributes>Drug
+--
+id: string
+titile: string
+datetime: date
+isTaken: boolean
+--
+loadData(): void
+add(): void
+removeItem(itemId: string): void
+renderItem(): void
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>80</x><y>59</y><w>210</w><h>190</h></coordinates><panel_attributes>Recomendation
+--
+id: string
+titile: string
+description: string
+datetime: date
+--
+loadData(): void
+add(): void
+removeItem(itemId: string): void
+renderItem(): void:
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>820</x><y>59</y><w>210</w><h>190</h></coordinates><panel_attributes>MoodJournal
+--
+id: string
+datetime: date
+mood: string
+--
+loadData(): void	
+add(): void
+
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>570</x><y>59</y><w>210</w><h>190</h></coordinates><panel_attributes>Test
+--
+id: string
+title: string
+datetime: date
+results: Array&lt;numbe&gt;
+--
+loadData(): void	
+add(): void
+removeItem(itemId: string): void
+renderResults(): void
+renderCharts(): void
+
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>330</x><y>59</y><w>210</w><h>190</h></coordinates><panel_attributes>Symptom
+--
+id: string
+title: string
+description: string
+degreeOfSeverity: string
+dateTime: date
+--
+loadData(): void	
+add(): void
+removeItem(itemId: string): void
+renderItem(): void
+
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>440</x><y>529</y><w>210</w><h>120</h></coordinates><panel_attributes>&lt;&lt;Abstract&gt;&gt;
+Notification
+--
+id: string
+title: string 
+datetime: string 
+--
+schedule(): void
+remove(): void
+
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>480</x><y>469</y><w>60</w><h>80</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;40;60</additional_attributes></element><element><id>Relation</id><coordinates><x>570</x><y>469</y><w>60</w><h>80</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>40;10;10;60</additional_attributes></element></diagram>

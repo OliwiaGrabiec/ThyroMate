@@ -51,6 +51,35 @@ export default function RecScreen({navigation}) {
       setUserId(getUserIdFromToken(token));
     }, [user_id]),
   );
+  useFocusEffect(
+    React.useCallback(() => {
+      const loadRecommendations = async () => {
+        try {
+          await axios
+            .get(`${BASE_URL}/users/${user_id}/recommendations.json`)
+            .then(response => {
+              const loadedRecommendations = [];
+              for (const key in response.data) {
+                loadedRecommendations.push({
+                  ...response.data[key],
+                  id: key,
+                });
+              }
+              setRecommendations2(loadedRecommendations);
+            })
+            .catch(err => console.error('bladf', err));
+        } catch (error) {
+          console.error(
+            'Błąd podczas wczytywania powiadomień z Firebase:',
+            error,
+          );
+        }
+      };
+
+      loadRecommendations();
+    }, [recommendations]),
+  );
+
   useEffect(() => {
     const loadRecommendations = async () => {
       try {
@@ -65,7 +94,6 @@ export default function RecScreen({navigation}) {
               });
             }
             setRecommendations2(loadedRecommendations);
-            console.log(recommendations);
           })
           .catch(err => console.error('bladf', err));
       } catch (error) {
@@ -77,7 +105,6 @@ export default function RecScreen({navigation}) {
     };
 
     loadRecommendations();
-    console.log(user_id);
   }, [user_id, recommendations]);
 
   // const loadRecommendations = async () => {

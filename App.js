@@ -21,6 +21,7 @@ import JournalScreen from './screens/JournalScreen';
 import AppGuideScreen from './screens/AppGuideScreen';
 import DetailScreen from './screens/DetailScreen';
 import AddRec from './screens/AddRec';
+import AppSwiper from './screens/AppSwiper';
 import IconButton from './components/ui/IconButton';
 
 const HomeStack = createNativeStackNavigator();
@@ -120,6 +121,17 @@ function AuthenticatedStack() {
                 headerStyle: {
                   height: 150,
                 },
+              }}
+            />
+            <HomeStack.Screen
+              name="AppSwiper"
+              component={AppSwiper}
+              options={{
+                title: 'Porady',
+                headerStyle: {
+                  height: 150,
+                },
+                headerBackTitle: null,
               }}
             />
             <HomeStack.Screen

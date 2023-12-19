@@ -76,7 +76,6 @@ export default function MedicineScreen({navigation}) {
                 id: key,
               });
             }
-            console.log(response.data);
             setNotifications2(loadedNotifications);
           })
           .catch(err => console.error('bladf', err));
@@ -109,7 +108,6 @@ export default function MedicineScreen({navigation}) {
       },
     })
       .then(async notifyId => {
-        console.log('ahs', notifyId);
         setNotifyId(notifyId);
         const newNotification = {
           id1: notifyId ? notifyId : ' ',

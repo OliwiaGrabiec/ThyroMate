@@ -115,7 +115,7 @@ export default function AddRec({route}) {
           <TextInput
             multiline
             numberOfLines={6}
-            maxLength={40}
+            maxLength={500}
             mode="outlined"
             outlineColor="#8a66af"
             activeOutlineColor="#8a66af"
