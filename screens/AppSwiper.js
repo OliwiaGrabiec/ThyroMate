@@ -18,22 +18,79 @@ export default function AppSwiper({route}) {
             <View style={styles.slide}>
               <Image source={require('../assets/1.png')} style={styles.image} />
             </View>
-            <View style={styles.slide2}>
-              <Text style={styles.text}>Beautiful</Text>
+            <View style={styles.slide}>
+              <Image
+                source={require('../assets/dieta_1.png')}
+                style={styles.image}
+              />
+            </View>
+            <View style={styles.slide}>
+              <Image
+                source={require('../assets/dieta_2.png')}
+                style={styles.image}
+              />
+            </View>
+            <View style={styles.slide}>
+              <Image
+                source={require('../assets/dieta_3.png')}
+                style={styles.image}
+              />
             </View>
           </Swiper>
         );
       case 'Daily':
         return (
-          <View style={styles.slide}>
-            <Image source={require('../assets/4.png')} style={styles.image} />
-          </View>
+          <Swiper
+            style={styles.wrapper}
+            showsButtons={true}
+            prevButton={<Text style={styles.arrow}>‹</Text>}
+            nextButton={<Text style={styles.arrow}>›</Text>}>
+            <View style={styles.slide}>
+              <Image source={require('../assets/4.png')} style={styles.image} />
+            </View>
+            <View style={styles.slide}>
+              <Image
+                source={require('../assets/zycie_1.png')}
+                style={styles.image}
+              />
+            </View>
+            <View style={styles.slide}>
+              <Image
+                source={require('../assets/zycie_2.png')}
+                style={styles.image}
+              />
+            </View>
+            <View style={styles.slide}>
+              <Image
+                source={require('../assets/zycie_3.png')}
+                style={styles.image}
+              />
+            </View>
+          </Swiper>
         );
       case 'Cos':
         return (
-          <View style={styles.slide}>
-            <Image source={require('../assets/6.png')} style={styles.image} />
-          </View>
+          <Swiper
+            style={styles.wrapper}
+            showsButtons={true}
+            prevButton={<Text style={styles.arrow}>‹</Text>}
+            nextButton={<Text style={styles.arrow}>›</Text>}>
+            <View style={styles.slide}>
+              <Image source={require('../assets/6.png')} style={styles.image} />
+            </View>
+            <View style={styles.slide}>
+              <Image
+                source={require('../assets/pamiec_1.png')}
+                style={styles.image}
+              />
+            </View>
+            <View style={styles.slide}>
+              <Image
+                source={require('../assets/pamiec_2.png')}
+                style={styles.image}
+              />
+            </View>
+          </Swiper>
         );
       default:
         return;

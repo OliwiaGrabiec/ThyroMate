@@ -46,46 +46,17 @@ export default function RecScreen({navigation}) {
     return jsonPayload.user_id;
   }
 
-  useFocusEffect(
-    React.useCallback(() => {
-      setUserId(getUserIdFromToken(token));
-    }, [user_id]),
-  );
-  useFocusEffect(
-    React.useCallback(() => {
-      const loadRecommendations = async () => {
-        try {
-          await axios
-            .get(`${BASE_URL}/users/${user_id}/recommendations.json`)
-            .then(response => {
-              const loadedRecommendations = [];
-              for (const key in response.data) {
-                loadedRecommendations.push({
-                  ...response.data[key],
-                  id: key,
-                });
-              }
-              setRecommendations2(loadedRecommendations);
-            })
-            .catch(err => console.error('bladf', err));
-        } catch (error) {
-          console.error(
-            'Błąd podczas wczytywania powiadomień z Firebase:',
-            error,
-          );
-        }
-      };
-
-      loadRecommendations();
-    }, [recommendations]),
-  );
+  useEffect(() => {
+    setUserId(getUserIdFromToken(token));
+  }, []);
 
   useEffect(() => {
-    const loadRecommendations = async () => {
+    (async () => {
       try {
         await axios
           .get(`${BASE_URL}/users/${user_id}/recommendations.json`)
           .then(response => {
+            if (response.data === null) return;
             const loadedRecommendations = [];
             for (const key in response.data) {
               loadedRecommendations.push({
@@ -94,40 +65,17 @@ export default function RecScreen({navigation}) {
               });
             }
             setRecommendations2(loadedRecommendations);
-          })
-          .catch(err => console.error('bladf', err));
+            console.log('sadfsd', loadedRecommendations.length, response.data);
+          });
       } catch (error) {
         console.error(
           'Błąd podczas wczytywania powiadomień z Firebase:',
           error,
         );
       }
-    };
-
-    loadRecommendations();
+    })();
   }, [user_id, recommendations]);
 
-  // const loadRecommendations = async () => {
-  //   try {
-  //     await axios
-  //       .get(`${BASE_URL}/users/${user_id}/recommendations.json`)
-  //       .then(response => {
-  //         const loadedRecommendations = [];
-  //         for (const key in response.data) {
-  //           loadedRecommendations.push({
-  //             ...response.data[key],
-  //             id: key,
-  //           });
-  //         }
-  //         console.log('hej');
-  //         setRecommendations(loadedRecommendations);
-  //         console.log(recommendations);
-  //       })
-  //       .catch(err => console.error('bladf', err));
-  //   } catch (error) {
-  //     console.error('Błąd podczas wczytywania powiadomień z Firebase:', error);
-  //   }
-  // };
   const removeRecommendation = async id => {
     try {
       const recommendationToDelete = recommendations2.find(
@@ -135,8 +83,6 @@ export default function RecScreen({navigation}) {
       );
 
       if (recommendationToDelete) {
-        console.log(recommendationToDelete);
-
         await axios.delete(
           `${BASE_URL}/users/${user_id}/recommendations/${id}.json`,
         );

@@ -30,7 +30,6 @@ export const useRegisterNotifications = () => {
           projectId: Constants.expoConfig.extra.eas.projectId,
         })
       ).data;
-      console.log(token);
     } else {
       alert('Must use physical device for Push Notifications');
     }

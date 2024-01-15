@@ -64,11 +64,12 @@ export default function MedicineScreen({navigation}) {
   }, [user_id]);
 
   useEffect(() => {
-    const loadMedicine = async () => {
+    (async () => {
       try {
         await await axios
           .get(`${BASE_URL}/users/${user_id}/medicine.json`)
           .then(response => {
+            if (response.data === null) return;
             const loadedNotifications = [];
             for (const key in response.data) {
               loadedNotifications.push({
@@ -85,11 +86,9 @@ export default function MedicineScreen({navigation}) {
           error,
         );
       }
-    };
-
-    loadMedicine();
-    console.log(user_id);
+    })();
   }, [user_id, notifications]);
+
   const addMedicine = async () => {
     const hourM = date.getHours();
     const minuteM = date.getMinutes();
@@ -118,8 +117,6 @@ export default function MedicineScreen({navigation}) {
         setTitle('');
         setDate(new Date());
         try {
-          console.log(user_id);
-
           const response = await axios.post(
             `${BASE_URL}/users/${user_id}/medicine.json`,
             newNotification,
@@ -144,10 +141,8 @@ export default function MedicineScreen({navigation}) {
       );
       if (!notificationToDelete) return;
 
-      console.log(notificationToDelete);
-
       const scheduledId = notificationToDelete.id1;
-      console.log(scheduledId);
+
       if (scheduledId) {
         await Notifications.cancelScheduledNotificationAsync(scheduledId);
       }
@@ -171,7 +166,7 @@ export default function MedicineScreen({navigation}) {
       }
       return med;
     });
-    console.log(updatedMedications);
+
     setNotifications2(updatedMedications);
     await AsyncStorage.setItem(
       'medications',

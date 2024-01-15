@@ -60,18 +60,17 @@ export default function NotificationsScreen({navigation}) {
     return jsonPayload.user_id;
   }
 
-  useFocusEffect(
-    React.useCallback(() => {
-      setUserId(getUserIdFromToken(token));
-      //loadNotifications();
-    }, [user_id]),
-  );
   useEffect(() => {
-    const loadNotifications = async () => {
+    setUserId(getUserIdFromToken(token));
+  }, []);
+
+  useEffect(() => {
+    (async () => {
       try {
         await await axios
           .get(`${BASE_URL}/users/${user_id}/notifications.json`)
           .then(response => {
+            if (response.data === null) return;
             const loadedNotifications = [];
             for (const key in response.data) {
               loadedNotifications.push({
@@ -81,7 +80,6 @@ export default function NotificationsScreen({navigation}) {
             }
 
             setNotifications2(loadedNotifications);
-            console.log(notifications2);
           })
           .catch(err => console.error('bladf', err));
       } catch (error) {
@@ -90,9 +88,7 @@ export default function NotificationsScreen({navigation}) {
           error,
         );
       }
-    };
-    loadNotifications();
-    console.log(user_id);
+    })();
   }, [user_id, notifications]);
 
   const scheduleNotification = async () => {
@@ -114,7 +110,6 @@ export default function NotificationsScreen({navigation}) {
         trigger: {seconds: triggerTime / 1000, channelId: 'new-emails'},
       })
         .then(async notifyId => {
-          console.log('ahs', notifyId);
           setNotifyId(notifyId);
 
           const newNotification = {
@@ -128,8 +123,6 @@ export default function NotificationsScreen({navigation}) {
           setDescription('');
           setDate(new Date());
           try {
-            console.log(user_id);
-
             const response = await axios.post(
               `${BASE_URL}/users/${user_id}/notifications.json`,
               newNotification,
@@ -155,8 +148,6 @@ export default function NotificationsScreen({navigation}) {
       setDescription('');
       setDate(new Date());
       try {
-        console.log(user_id);
-
         const response = await axios.post(
           `${BASE_URL}/users/${user_id}/notifications.json`,
           newNotification,
@@ -180,10 +171,8 @@ export default function NotificationsScreen({navigation}) {
       );
       if (!notificationToDelete) return;
 
-      console.log(notificationToDelete);
-
       const scheduledId = notificationToDelete.id1;
-      console.log(scheduledId);
+
       if (scheduledId) {
         await Notifications.cancelScheduledNotificationAsync(scheduledId);
       }
@@ -258,7 +247,6 @@ export default function NotificationsScreen({navigation}) {
                       label="Tytuł"
                       value={title}
                       onChangeText={text => {
-                        console.log('Title updated:', text); // Add this line to check
                         setTitle(text);
                       }}
                       style={styles.text}

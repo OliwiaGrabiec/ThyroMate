@@ -87,11 +87,12 @@ export default function SymptomsScreen({navigation}) {
   }, []);
 
   useEffect(() => {
-    const loadSymptomsForDay = async () => {
+    (async () => {
       try {
         await axios
           .get(`${BASE_URL}/users/${user_id}/symptoms.json`)
           .then(response => {
+            if (response.data === null) return;
             const symptomsForAgenda = {};
             const loadedSymptoms = [];
             for (const key in response.data) {
@@ -108,7 +109,6 @@ export default function SymptomsScreen({navigation}) {
               }
 
               symptomsForAgenda[formattedSymptomDate].push({
-                //...symptom,
                 id: key,
                 title: symptom.title,
                 description: symptom.description,
@@ -121,8 +121,7 @@ export default function SymptomsScreen({navigation}) {
       } catch (error) {
         console.error('Błąd podczas wczytywania objawów z Firebase:', error);
       }
-    };
-    loadSymptomsForDay();
+    })();
   }, [user_id, date, symptoms]);
 
   const onDayPress = day => {
@@ -174,15 +173,13 @@ export default function SymptomsScreen({navigation}) {
 
   const removeSymptoms = async id => {
     try {
-      console.log(symptoms2);
       const symptomToDeleteIndex = symptoms2.findIndex(
         symptom => symptom.id === id,
       );
-      console.log(symptomToDeleteIndex);
+
       if (symptomToDeleteIndex !== -1) {
         const symptomToDelete = symptoms2[symptomToDeleteIndex];
         const formattedSymptomDate = parseAndFormatDate(symptomToDelete.date);
-        console.log(`Deleting symptom from date: ${formattedSymptomDate}`);
 
         await axios.delete(`${BASE_URL}/users/${user_id}/symptoms/${id}.json`);
 
@@ -239,7 +236,6 @@ export default function SymptomsScreen({navigation}) {
       </View>
       <View
         style={{
-          //padding: 10,
           width: 70,
           height: 30,
           marginLeft: 200,
@@ -266,7 +262,6 @@ export default function SymptomsScreen({navigation}) {
         <Agenda
           items={items}
           onDayPress={onDayPress}
-          // rowHasChanged={rowHasChanged}
           renderItem={renderItem}
           renderEmptyData={() => {
             return (
@@ -392,7 +387,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 10,
-    //shadowOffset: { width: 0, height: 4 },
     height: 130,
     marginTop: 10,
     backgroundColor: '#afeeee',

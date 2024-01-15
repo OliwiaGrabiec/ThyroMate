@@ -51,21 +51,17 @@ export default function MonitoringScreen({navigation}) {
     return jsonPayload.user_id;
   }
 
-  // useFocusEffect(
-  //   React.useCallback(() => {
-  //     setUserId(getUserIdFromToken(token));
-  //     loadTests();
-  //   }, [user_id]),
-  // );
   useEffect(() => {
     setUserId(getUserIdFromToken(token));
   }, []);
+
   useEffect(() => {
-    const loadTests = async () => {
+    (async () => {
       try {
         await axios
           .get(`${BASE_URL}/users/${user_id}/tests.json`)
           .then(response => {
+            if (response.data === null) return;
             const loadedTests = [];
             for (const key in response.data) {
               loadedTests.push({
@@ -81,27 +77,8 @@ export default function MonitoringScreen({navigation}) {
           error,
         );
       }
-    };
-    loadTests();
+    })();
   }, [user_id, tests]);
-
-  // const loadTests = async () => {
-  //   try {
-  //     const response = await axios.get(
-  //       `${BASE_URL}/users/${user_id}/tests.json`,
-  //     );
-  //     const loadedTests = [];
-  //     for (const key in response.data) {
-  //       loadedTests.push({
-  //         ...response.data[key],
-  //         id: key,
-  //       });
-  //     }
-  //     setTests2(loadedTests);
-  //   } catch (error) {
-  //     console.error('Błąd podczas wczytywania powiadomień z Firebase:', error);
-  //   }
-  // };
 
   const addTests = async () => {
     if (!title.trim()) {
@@ -116,14 +93,12 @@ export default function MonitoringScreen({navigation}) {
     setTests([...tests, newTest]);
     setTitle('');
     try {
-      console.log(user_id);
-
       const response = await axios.post(
         `${BASE_URL}/users/${user_id}/tests.json`,
         newTest,
       );
       newTest.id = response.data.name;
-      console.log(newTest.id);
+
       navigation.navigate('DetailScreen', {idN: newTest.id});
     } catch (error) {
       console.error('Błąd podczas zapisywania powiadomień w Firebase:', error);
@@ -231,7 +206,7 @@ const styles = StyleSheet.create({
     padding: 20,
     justifyContent: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.1)',
-    //alignItems: 'center',
+
     ...commonShadow,
   },
   overlay: {

@@ -62,23 +62,23 @@ export default function DetailScreen({route}) {
     return jsonPayload.user_id;
   }
 
-  useFocusEffect(
-    React.useCallback(() => {
-      setUserId(getUserIdFromToken(token));
-      // loadDetail();
-    }, [user_id]),
-  );
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     setUserId(getUserIdFromToken(token));
+  //   }, [user_id]),
+  // );
 
-  // useEffect(() => {
-  //   setUserId(getUserIdFromToken(token));
-  // }, []);
   useEffect(() => {
-    const loadDetail = async () => {
-      console.log('hej');
+    setUserId(getUserIdFromToken(token));
+  }, []);
+
+  useEffect(() => {
+    (async () => {
       try {
         await axios
           .get(`${BASE_URL}/users/${user_id}/history/${title}.json`)
           .then(response => {
+            if (response.data === null) return;
             const loadedTestsDetail = [];
             for (const key in response.data) {
               loadedTestsDetail.push({
@@ -86,7 +86,7 @@ export default function DetailScreen({route}) {
                 id: key,
               });
             }
-            console.log(testsDetail2);
+
             setTestsDetail2(loadedTestsDetail);
           });
       } catch (error) {
@@ -95,8 +95,7 @@ export default function DetailScreen({route}) {
           error,
         );
       }
-    };
-    loadDetail();
+    })();
   }, [user_id, testsDetail]);
 
   const handleTitle1Change = text => {
@@ -127,25 +126,6 @@ export default function DetailScreen({route}) {
       },
     ],
   };
-  // const loadDetail = async () => {
-  //   console.log('hej');
-  //   try {
-  //     const response = await axios.get(
-  //       `${BASE_URL}/users/${user_id}/history/${title}.json`,
-  //     );
-  //     const loadedTestsDetail = [];
-  //     for (const key in response.data) {
-  //       loadedTestsDetail.push({
-  //         ...response.data[key],
-  //         id: key,
-  //       });
-  //     }
-  //     console.log(testsDetail2);
-  //     setTestsDetail2(loadedTestsDetail);
-  //   } catch (error) {
-  //     console.error('Błąd podczas wczytywania powiadomień z Firebase:', error);
-  //   }
-  // };
 
   const addDetail = async () => {
     if (!title1.trim()) {

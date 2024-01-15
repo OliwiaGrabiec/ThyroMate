@@ -71,18 +71,18 @@ const JournalScreen = () => {
     const jsonPayload = JSON.parse(decodedPayload);
     return jsonPayload.user_id;
   }
-  useFocusEffect(
-    React.useCallback(() => {
-      setUserId(getUserIdFromToken(token));
-    }, [user_id]),
-  );
 
   useEffect(() => {
-    const loadMoods = async () => {
+    setUserId(getUserIdFromToken(token));
+  }, []);
+
+  useEffect(() => {
+    (async () => {
       try {
         await axios
           .get(`${BASE_URL}/users/${user_id}/moods.json`)
           .then(response => {
+            if (response.data === null) return;
             const loadedMoods = response.data || {};
 
             const transformedMoods = {};
@@ -104,8 +104,7 @@ const JournalScreen = () => {
       } catch (error) {
         console.error('Error while loading mood data:', error);
       }
-    };
-    loadMoods();
+    })();
   }, [user_id, moodHistory]);
   const moodNamesMap = {
     happy: 'szczęśliwy',
@@ -198,11 +197,11 @@ const JournalScreen = () => {
           moodColor = '#DC143C';
           break;
         default:
-          moodColor = 'grey'; // Fallback color
+          moodColor = 'grey';
       }
-      console.log(`Mood: ${mood}, Color: ${moodColor}`);
+
       return {
-        name: ' ', //moodNamesMap[mood] || mood,
+        name: ' ',
         population: moodCounts[mood],
         color: moodColor,
         legendFontColor: '#7F7F7F',
@@ -258,13 +257,6 @@ const JournalScreen = () => {
             borderRadius: 0,
           },
         }}
-        style={
-          {
-            // marginVertical: 0,
-            // borderRadius: 10,
-            // marginRight: 10,
-          }
-        }
         accessor="population"
         backgroundColor="transparent"
         paddingLeft="0"
@@ -276,8 +268,6 @@ const JournalScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    //alignItems: 'center',
-    //justifyContent: 'center',
   },
   moodsContainer: {
     flexDirection: 'row',

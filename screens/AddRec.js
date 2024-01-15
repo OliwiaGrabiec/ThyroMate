@@ -57,14 +57,12 @@ export default function AddRec({route}) {
       description,
       date: date2.toLocaleString(),
     };
-    console.log(date);
+
     setRecommendations([...recommendations, newRecommendation]);
     setTitle2('');
     setDescription('');
     setDate2(new Date());
     try {
-      console.log(user_id);
-
       const response = await axios.post(
         `${BASE_URL}/users/${user_id}/recommendations.json`,
         newRecommendation,
